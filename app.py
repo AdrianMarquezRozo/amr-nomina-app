@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="AMR SUITE | BAJO RELIEVE",
@@ -8,7 +7,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Interfaz principal robusta y autocontenida
+# Interfaz principal robusta, autocontenida y libre de errores de sintaxis HTML
 st.markdown("""
     <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
         <h2 style="color: #6366f1;">AMR SUITE | NÓMINA Y SEGURIDAD SOCIAL</h2>
@@ -16,7 +15,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Cargador seguro del sistema de nómina quincenal
+# Cargador seguro del sistema de nómina quincenal integrado en la vista
 html_code = """
 <!DOCTYPE html>
 <html lang="es">
@@ -132,7 +131,7 @@ html_code = """
         </section>
     </div>
     <div class="panel-right">
-        <div style="width: 100%; max-width: 72rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;" class="no-print">
+        <div style="width: 100%; max-width: 72rem; display: flex; justify-content: space-linejoin: space-between; align-items: center; margin-bottom: 1rem;" class="no-print">
             <div style="display: flex; gap: 0.5rem;">
                 <button onclick="exportBackup()" class="btn-header btn-header-blue shadow-sm" title="Descarga una copia de toda tu información">💾 Guardar Copia de Seguridad</button>
                 <label class="btn-header btn-header-white shadow-sm" style="margin: 0;" title="Sube tu copia para restaurar">
@@ -225,7 +224,7 @@ html_code = """
                 document.body.appendChild(downloadNode);
                 downloadNode.click();
                 downloadNode.remove();
-                alert("✅ Copia de seguridad descargada.");
+                alert("Copia de seguridad descargada.");
             } catch (err) { alert("Error al guardar copia: " + err.message); }
         }
         function importBackup(event) {
@@ -235,12 +234,12 @@ html_code = """
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if(confirm("⚠️ ¿Estás seguro de restaurar esta copia? Reemplazará la información actual.")) {
+                    if(confirm("¿Estás seguro de restaurar esta copia? Reemplazará la información actual.")) {
                         for (const key in data) { localStorage.setItem(key, data[key]); }
-                        alert("✅ Copia restaurada exitosamente. La página se recargará.");
+                        alert("Copia restaurada exitosamente. La página se recargará.");
                         location.reload();
                     }
-                } catch(err) { alert("❌ Error: El archivo no es un respaldo válido."); }
+                } catch(err) { alert("Error: El archivo no es un respaldo válido."); }
             };
             reader.readAsText(file);
         }
@@ -268,12 +267,12 @@ html_code = """
             const type = document.getElementById('newEmpType').value;
             const docNum = document.getElementById('newEmpDoc').value;
             const sal = document.getElementById('newEmpSal').value;
-            if(!rawName || !docNum) return alert("⚠️ Nombre y Número de documento son obligatorios.");
+            if(!rawName || !docNum) return alert("Nombre y Número de documento son obligatorios.");
             employees.push({ id: Date.now(), name: toTitleCase(rawName), doc: `${type} ${docNum}`, sal: sal || 0 });
             localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
             ['newEmpName','newEmpDoc','newEmpSal'].forEach(id => document.getElementById(id).value = '');
             refreshEmployeeUI();
-            alert("✅ Trabajador guardado con éxito.");
+            alert("Trabajador guardado con éxito.");
         }
         function deleteWorker(id) {
             if(confirm("¿Seguro que deseas eliminar a este trabajador?")) {
@@ -330,10 +329,10 @@ html_code = """
         }
         function addRec() {
             const empId = document.getElementById('employeeSelect').value;
-            if(!empId) return alert("⚠️ Seleccione un Colaborador");
+            if(!empId) return alert("Seleccione un Colaborador");
             const emp = employees.find(x => x.id == empId);
             const novType = document.getElementById('novType').value;
-            if(!novType) return alert("⚠️ Seleccione el Tipo de Novedad");
+            if(!novType) return alert("Seleccione el Tipo de Novedad");
             const incap = document.getElementById('incapPercent').value;
             records.push({
                 id: Date.now(), name: emp.name, doc: emp.doc, type: clean(novType),
@@ -356,7 +355,7 @@ html_code = """
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             if(records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="padding: 2rem; text-align: center; color: #94a3b8; font-weight: 600; font-style: italic;">No hay registros para este periodo.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="padding: 2rem; text-align: center; color: #94a3b8; font-style: italic;">No hay registros para este periodo.</td></tr>`;
                 return;
             }
             const currentQ = document.getElementById('qSelect').value;
@@ -434,7 +433,7 @@ html_code = """
             if(type.includes('Incapacidad')) {
                  const factor = type.includes('ARL') ? 1 : 0.66666;
                  val = (salary / 30) * days * factor;
-            } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.instances?.includes('Maternidad') || type.includes('Paternidad')) {
+            } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.includes('Maternidad') || type.includes('Paternidad')) {
                  if(!type.includes('NO Remunerado')) { val = (salary / 30) * days; }
             }
             if(val > 0) document.getElementById('dVal').value = Math.round(val);
@@ -565,3 +564,7 @@ html_code = """
     </script>
 </body>
 </html>
+"""
+
+components.html(html_code, height=900, scrolling=True)
+```eof
