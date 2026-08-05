@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMR SUITE | BAJO RELIEVE</title>
+    <title>AMR SUITE | FINAL STABLE</title>
     
     <!-- Fuentes y Librerías -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,308 +13,309 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
+        /* Base */
         :root { --brand-dark: #0f172a; --brand-accent: #6366f1; --bg-canvas: #f1f5f9; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Manrope', sans-serif; background-color: var(--bg-canvas); color: #1e293b; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 13.5px; }
+        body { font-family: 'Manrope', sans-serif; background-color: var(--bg-canvas); color: #1e293b; }
         
-        @media (min-width: 1024px) { 
-            body { flex-direction: row; } 
-        }
-
-        .panel-left { width: 100%; background-color: white; height: 100%; display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 30; overflow-y: auto; padding: 1.25rem; }
-        @media (min-width: 1024px) { .panel-left { width: 25%; } }
+        /* Panel Control */
+        .panel-control { font-size: 13.5px; }
         
-        .panel-right { width: 100%; height: 100%; display: flex; flex-direction: column; background-color: #e2e8f0; overflow: auto; padding: 1.5rem; align-items: center; }
-        @media (min-width: 1024px) { .panel-right { width: 75%; } }
-
-        .input-exec { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; font-weight: 600; background: white; transition: all 0.2s; margin-bottom: 5px; font-family: inherit;}
+        /* Inputs & Labels */
+        .input-exec { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; font-weight: 600; background: white; transition: all 0.2s; margin-bottom: 5px; }
         .input-exec:focus { outline: none; border-color: var(--brand-accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
         .label-exec { display: block; font-size: 11px; text-transform: uppercase; font-weight: 800; color: #475569; margin-bottom: 3px; }
+        
+        /* Estilos Críticos */
         .txt-red { color: #dc2626 !important; font-weight: 800 !important; }
-        #sheetLogoBox { height: 110px; width: auto; max-width: 300px; display: flex; align-items: center; justify-content: flex-start; }
-        #sheetLogoBox img { height: 75px; width: auto; object-fit: contain; }
-        .btn-main { background-color: #0f172a; color: white; padding: 10px; border-radius: 5px; font-weight: 700; text-transform: uppercase; font-size: 11px; width: 100%; transition: all 0.2s; cursor: pointer; text-align: center; border: none; font-family: inherit;}
+        
+        /* Contenedor del Logo en VISTA PREVIA (DERECHA) - MUY IMPORTANTE */
+        #sheetLogoBox { 
+            height: 120px; /* Altura fija para no desarmar el layout */
+            width: auto;
+            max-width: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden; /* Evita que crezca más del contenedor */
+        }
+        
+        /* El logo dentro de la vista previa */
+        #sheetLogoBox img { 
+            max-height: 100%; /* No puede ser más alto que los 120px del contenedor */
+            width: auto;
+            max-width: 100%;
+            object-fit: contain; /* Ajusta la imagen sin deformarla */
+            display: block;
+        }
+
+        /* Contenedor y previsualizacion en PANEL IZQUIERDO */
+        .logo-upload-box {
+            position: relative;
+            height: 80px; /* Tamaño fijo en el panel izquierdo */
+            width: 100%;
+            border: 2px dashed #cbd5e1;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #f8fafc;
+            cursor: pointer;
+        }
+        .logo-upload-box:hover { background-color: #f1f5f9; }
+        #panelLogoPreview {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+            z-index: 10;
+        }
+        
+        /* Botones */
+        .btn-main { background-color: #0f172a; color: white; padding: 10px; border-radius: 5px; font-weight: 700; text-transform: uppercase; font-size: 11px; width: 100%; transition: all 0.2s; cursor: pointer; text-align: center; }
         .btn-main:hover { background-color: #4f46e5; }
         
-        .btn-header { padding: 0.5rem 1rem; border-radius: 0.25rem; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 0.25rem; }
-        .btn-header-white { background-color: white; border: 1px solid #cbd5e1; color: #334155; }
-        .btn-header-white:hover { background-color: #f8fafc; }
-        .btn-header-green { background-color: #059669; color: white; }
-        .btn-header-green:hover { background-color: #047857; }
-        .btn-header-red { background-color: #e11d48; color: white; }
-        .btn-header-red:hover { background-color: #be123c; }
-        .btn-header-blue { background-color: #2563eb; color: white; }
-        .btn-header-blue:hover { background-color: #1d4ed8; }
-
-        @media print { .no-print { display: none !important; } }
+        /* Estilos de Tabla Refinados */
+        .separator-row { background-color: #f8fafc !important; color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; }
+        .acc-cell { display: flex; justify-content: center; align-items: center; gap: 10px; height: 100%; border: none !important; }
+        .btn-icon { cursor: pointer; transition: transform 0.1s; display: inline-block; }
+        .btn-icon:hover { transform: scale(1.2); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
-<body>
+<body class="h-screen flex flex-col lg:flex-row overflow-hidden panel-control">
 
-    <div class="panel-left">
-        <div class="p-4 bg-slate-900 text-white rounded shadow-lg text-center" style="flex-shrink: 0; margin-bottom: 1.25rem;">
-            <h1 class="font-bold text-sm text-amber-400 uppercase" style="letter-spacing: 0.1em;">AMR SUITE</h1>
-            <span class="text-xs text-slate-400">Respaldo Local + Streamlit</span>
+    <!-- === PANEL IZQUIERDO (Control) === -->
+    <div class="w-full lg:w-3/12 bg-white h-full flex flex-col border-r shadow-xl z-30 overflow-y-auto p-5 space-y-5">
+        <div class="p-4 bg-slate-900 text-white rounded shadow-lg text-center shrink-0">
+            <h1 class="font-bold text-sm text-amber-400 uppercase tracking-widest">AMR SUITE FINAL</h1>
+            <span class="text-[10px] text-slate-400">PDF & Logo Fix</span>
         </div>
 
-        <section class="mb-4">
-            <span class="label-exec text-indigo-700 italic" style="text-decoration: underline;">1. Identificación</span>
+        <!-- 1. IDENTIFICACIÓN -->
+        <section class="space-y-1">
+            <span class="label-exec text-indigo-700 font-black italic underline">1. Identificación</span>
             <input type="text" id="companyName" class="input-exec" placeholder="NOMBRE EMPRESA" oninput="saveConfig()">
             <input type="text" id="companyNIT" class="input-exec" placeholder="NIT" oninput="saveConfig()">
-            <input type="text" id="preparedBy" class="input-exec" style="border-left: 4px solid #fbbf24;" placeholder="ELABORADO POR (Obligatorio)..." oninput="saveConfig()">
+            <input type="text" id="preparedBy" class="input-exec border-l-4 border-l-amber-400" placeholder="ELABORADO POR (Obligatorio)..." oninput="saveConfig()">
             
-             <label class="block mt-2 cursor-pointer" style="margin-top: 0.5rem;">
-                <span class="text-xs text-indigo-600 font-bold" style="text-decoration: underline;">📂 Subir logo</span>
+             <!-- Carga Logo -->
+             <label class="logo-upload-box mt-2">
+                <div id="uploadPlaceholder" class="text-[10px] font-bold text-gray-500 uppercase flex flex-col items-center gap-1">
+                    <span class="text-xl">📂</span>
+                    <span>Cargar Logo</span>
+                </div>
+                <img id="panelLogoPreview" class="hidden">
                 <input type="file" accept="image/*" class="hidden" onchange="handleLogoUpload(this)">
             </label>
         </section>
 
-        <section class="border-t border-slate-200 pt-3 mb-4">
-            <span class="label-exec text-indigo-700 font-black italic underline">2. Registro de Novedad</span>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; margin-bottom: 0.5rem;">
-                <input type="month" id="reportMonth" class="input-exec" style="margin-bottom: 0;" onchange="updatePeriod()">
-                <select id="qSelect" class="input-exec" style="margin-bottom: 0; padding-left: 4px; padding-right: 4px; font-size: 12px;" onchange="updatePeriod()">
-                    <option value="1">1ª Quincena</option>
-                    <option value="2">2ª Quincena</option>
-                </select>
-            </div>
-            
-            <select id="employeeSelect" class="input-exec" onchange="showEmpData()">
-                <option value="">Seleccionar Trabajador...</option>
-            </select>
-            
-            <div id="empDetails" class="p-2 bg-yellow-50 rounded border border-yellow-200 hidden text-xs font-bold mb-2">
-                <span id="detDoc"></span> | <span id="detSal" class="text-indigo-600"></span>
-            </div>
-            
-            <label class="label-exec mt-2">Tipo de Novedad</label>
-            <select id="novType" class="input-exec" onchange="configFields()">
-                <option value="">Seleccione Novedad...</option>
-                <option value="Aumento Salarial">Aumento Salarial</option>
-                <option value="Comisión">Comisión</option>
-                <option value="Horas extras - Recargos">Horas extras - Recargos</option>
-                <option value="Incapacidad por Accidente Laboral ARL">Incapacidad por Accidente Laboral ARL</option>
-                <option value="Incapacidad por enfermedad General EPS">Incapacidad por enfermedad General EPS</option>
-                <option value="Ingreso Laboral">Ingreso Laboral</option>
-                <option value="Licencia Maternidad">Licencia Maternidad</option>
-                <option value="Licencia de Paternidad">Licencia de Paternidad</option>
-                <option value="Permiso NO Remunerado">Permiso NO Remunerado</option>
-                <option value="Permiso Remunerado">Permiso Remunerado</option>
-                <option value="Retiro Laboral">Retiro Laboral</option>
-                <option value="Vacaciones">Vacaciones</option>
-            </select>
-
-            <input type="text" id="incapPercent" class="input-exec" placeholder="% INCAP">
-            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem; margin-bottom: 0.25rem;">
-                <div><label class="label-exec">Inicio</label><input type="date" id="dateStart" class="input-exec" onchange="calcDays()"></div>
-                <div><label class="label-exec">Fin</label><input type="date" id="dateEnd" class="input-exec" onchange="calcDays()"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem; margin-bottom: 0.25rem;">
-                <div><label class="label-exec">Días</label><input type="number" id="dDays" class="input-exec text-center" placeholder="Días" oninput="calcVal()"></div>
-                <div><label class="label-exec">Valor</label><input type="text" id="dVal" class="input-exec text-right" placeholder="Valor $"></div>
-            </div>
-            <textarea id="dObs" class="input-exec" style="height: 4rem;" placeholder="Observaciones..."></textarea>
-            
-            <input type="hidden" id="rawSalary" value="0">
-            <input type="hidden" id="dStart"><input type="hidden" id="dEnd">
-
-            <button onclick="addRec()" class="btn-main mt-1" style="background-color: #0f172a;">AGREGAR NOVEDAD</button>
-        </section>
-
-        <section class="bg-indigo-50 p-3 rounded border border-indigo-100 mb-4">
-            <span class="label-exec text-indigo-800 font-black italic underline">3. Historial de Reportes</span>
-            <div id="historyList" class="mt-2" style="max-height: 10rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;"></div>
-        </section>
-
-        <section class="bg-slate-100 p-3 rounded border border-slate-300 mb-8">
-            <span class="label-exec text-slate-800 font-black italic underline">4. Gestión de Personal</span>
-            <div class="mt-2" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <!-- 2. GESTIÓN DE PERSONAL -->
+        <section class="bg-slate-100 p-3 rounded border border-slate-300">
+            <span class="label-exec text-slate-800 font-black italic underline">2. Agregar Trabajador</span>
+            <div class="mt-2 space-y-2">
                 <input type="text" id="newEmpName" class="input-exec" placeholder="Nombre Completo">
-                <div style="display: flex; gap: 0.25rem;">
-                    <select id="newEmpType" class="input-exec" style="width: 33%;">
-                        <option value="CC">CC</option><option value="CE">CE</option>
-                        <option value="PPT">PPT</option><option value="PEP">PEP</option><option value="TI">TI</option>
+                <div class="flex gap-1">
+                    <select id="newEmpType" class="input-exec w-1/3">
+                        <option value="CC">CC</option><option value="CE">CE</option><option value="PPT">PPT</option><option value="PEP">PEP</option><option value="TI">TI</option>
                     </select>
-                    <input type="text" id="newEmpDoc" class="input-exec" style="width: 67%;" placeholder="Número">
+                    <input type="text" id="newEmpDoc" class="input-exec w-2/3" placeholder="Número">
                 </div>
                 <input type="number" id="newEmpSal" class="input-exec" placeholder="Salario Base">
-                <button onclick="addEmployee()" class="btn-main" style="background-color: #4f46e5;">Guardar Trabajador</button>
+                <button onclick="addEmployee()" class="btn-main bg-indigo-600 hover:bg-indigo-700">Guardar Trabajador</button>
             </div>
             
             <div class="mt-3 border-t border-slate-300 pt-2">
                 <label class="label-exec text-slate-500">Lista Actual (Click 🗑️ para borrar)</label>
-                <div id="workerListContainer" class="bg-white border border-slate-200 rounded" style="max-height: 6rem; overflow-y: auto;"></div>
+                <div id="workerListContainer" class="bg-white border border-slate-200 rounded max-h-24 overflow-y-auto p-1 text-[11px] divide-y divide-slate-100"></div>
             </div>
+        </section>
+
+        <!-- 3. HISTORIAL -->
+        <section class="bg-indigo-50 p-3 rounded border border-indigo-100">
+            <span class="label-exec text-indigo-800 font-black italic underline">3. Historial</span>
+            <div id="historyList" class="mt-2 space-y-2 max-h-40 overflow-y-auto"></div>
+        </section>
+
+        <!-- 4. REGISTRO -->
+        <section class="space-y-1 border-t pt-3">
+            <span class="label-exec text-indigo-700 font-black italic underline">4. Registro de Novedad</span>
+            
+            <div class="flex gap-1">
+                <input type="month" id="reportMonth" class="input-exec" onchange="updatePeriod()">
+                <select id="qSelect" class="input-exec" onchange="updatePeriod()"><option value="1">1ª Quincena</option><option value="2">2ª Quincena</option></select>
+            </div>
+            
+            <select id="employeeSelect" class="input-exec cursor-pointer font-bold bg-yellow-50" onchange="showEmpData()">
+                <option value="">Seleccionar Trabajador...</option>
+            </select>
+            
+            <div id="empDetails" class="grid grid-cols-2 gap-2 p-2 bg-yellow-100 rounded border border-yellow-300 hidden mb-2 text-[11px] font-bold">
+                <div><label class="block text-gray-500 font-bold text-[9px] uppercase">Documento</label><span id="detDoc" class="text-slate-900 block truncate"></span></div>
+                <div><label class="block text-gray-500 font-bold text-[9px] uppercase">Salario</label><span id="detSal" class="text-indigo-600 block truncate"></span></div>
+            </div>
+            
+            <label class="label-exec mt-2">Tipo de Novedad</label>
+            <select id="novType" class="input-exec font-bold cursor-pointer" onchange="configFields()">
+                <option value="">Seleccione Novedad...</option>
+                <option value="Ingreso Laboral">Ingreso Laboral</option>
+                <option value="Retiro Laboral">Retiro Laboral</option>
+                <option value="Incapacidad EG">Incapacidad EG (66.6%)</option>
+                <option value="Incapacidad AT">Incapacidad AT (100%)</option>
+                <option value="Licencia de Maternidad">Licencia de Maternidad</option>
+                <option value="Licencia de Paternidad">Licencia de Paternidad</option>
+                <option value="Licencia Remunerada">Licencia Remunerada</option>
+                <option value="Permiso NO Remunerado">Permiso NO Remunerado</option>
+                <option value="Permiso Remunerado">Permiso Remunerado</option>
+                <option value="Vacaciones">Vacaciones</option>
+                <option value="Suspensión">Suspensión</option>
+                <option value="Aumento Salarial">Aumento Salarial</option>
+                <option value="Comisión">Comisión</option>
+                <option value="Horas extras - Recargos">Horas extras - Recargos</option>
+            </select>
+
+            <input type="text" id="incapPercent" class="input-exec bg-slate-50 text-amber-700 font-bold" placeholder="% INCAP (Auto)" readonly>
+            
+            <div class="grid grid-cols-2 gap-1 mt-1">
+                <div><label class="label-exec">Inicio</label><input type="date" id="dateStart" class="input-exec text-[11px]" onchange="calcDays()"></div>
+                <div><label class="label-exec">Fin</label><input type="date" id="dateEnd" class="input-exec text-[11px]" onchange="calcDays()"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-1 mt-1">
+                <div><label class="label-exec">Días</label><input type="number" id="dDays" class="input-exec text-center" placeholder="0" oninput="calcVal()"></div>
+                <div><label class="label-exec">Valor $</label><input type="text" id="dVal" class="input-exec text-right font-mono" placeholder="0"></div>
+            </div>
+            
+            <textarea id="dObs" class="input-exec h-16 resize-none mt-2" placeholder="Observaciones..."></textarea>
+            
+            <input type="hidden" id="rawSalary" value="0">
+            <button onclick="addRec()" class="btn-main mt-1">AGREGAR NOVEDAD</button>
         </section>
     </div>
 
-    <div class="panel-right">
-        <div style="width: 100%; max-width: 72rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;" class="no-print">
-            <div style="display: flex; gap: 0.5rem;">
-                <button onclick="exportBackup()" class="btn-header btn-header-blue shadow-sm" title="Descarga una copia de toda tu información">💾 Guardar Copia de Seguridad</button>
-                <label class="btn-header btn-header-white shadow-sm" style="margin: 0;" title="Sube tu copia para restaurar">
-                    📂 Restaurar Copia
-                    <input type="file" accept=".json" class="hidden" onchange="importBackup(event)">
-                </label>
-            </div>
-
-            <div style="display: flex; gap: 0.5rem;">
-                <button onclick="clearForNew()" class="btn-header btn-header-white shadow-sm">✨ Nueva Hoja</button>
-                <button onclick="downloadExcel()" class="btn-header btn-header-green shadow-sm">📊 Excel</button>
-                <button onclick="generatePDF()" class="btn-header btn-header-red shadow-md">📄 PDF</button>
-            </div>
+    <!-- === VISTA PREVIA (Derecha) === -->
+    <div class="w-full lg:w-9/12 h-full flex flex-col bg-gray-200 overflow-auto p-6 items-center">
+        
+        <!-- TOOLBAR -->
+        <div class="w-full max-w-6xl flex justify-end gap-3 mb-4 no-print">
+            <button onclick="clearForNew()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-slate-50 transition shadow-sm">✨ Nueva Hoja</button>
+            <button onclick="downloadExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-emerald-700 transition shadow-sm">📊 Excel</button>
+            <button onclick="downloadPDF()" class="bg-rose-600 text-white px-5 py-2 rounded text-[11px] font-bold uppercase hover:bg-rose-700 transition shadow-md cursor-pointer">📄 Descargar PDF</button>
         </div>
 
-        <div id="captureArea" class="bg-white w-full max-w-6xl shadow-2xl border min-h-850 p-12 flex flex-col" style="border-color: #e2e8f0; min-height: 850px;">
+        <div id="captureArea" class="bg-white w-full max-w-6xl shadow-2xl border min-h-[850px] p-12 flex flex-col">
+            <!-- Header Reporte -->
             <div class="flex justify-between items-start mb-8 border-b-2 border-slate-900 pb-4">
-                <div id="sheetLogoBox"></div>
+                <div id="sheetLogoBox">
+                    <!-- IMG inyectado por JS -->
+                </div>
                 <div class="text-right">
-                    <h2 class="text-xl font-bold text-indigo-600 uppercase">NOVEDADES DE NÓMINA - SEGURIDAD SOCIAL</h2>
-                    <div class="flex justify-end gap-5 text-sm font-bold text-slate-700 mt-2 uppercase">
+                    <h2 class="text-xl font-bold text-[#6366f1] uppercase">NOVEDADES DE NÓMINA - SEGURIDAD SOCIAL</h2>
+                    <div class="flex justify-end gap-5 text-[12px] font-bold text-slate-700 mt-2 uppercase">
                         <span id="dispQ1">---</span><span id="dispPeriod">---</span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-50 px-8 py-4 border-b border-slate-200 flex flex-col md:flex-row gap-8 items-center md:items-start mb-6">
-                <div class="flex-1">
-                    <span class="block text-xs font-bold text-slate-400 uppercase mb-1" style="letter-spacing: 0.1em;">Empresa / Razón Social</span>
-                    <h2 class="text-lg font-bold text-slate-800" id="sheetCompanyTitle" style="line-height: 1;">---</h2>
-                </div>
-                <div class="text-right">
-                    <span class="block text-xs font-bold text-slate-400 uppercase mb-1" style="letter-spacing: 0.1em;">NIT / Identificación</span>
-                    <p class="text-xl font-mono font-bold text-slate-600" id="sheetCompanyNIT" style="line-height: 1;">---</p>
-                </div>
+            <!-- Cliente -->
+            <div class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center mb-6">
+                <div><span class="label-exec">Empresa / Razón Social</span><h2 id="dispCo" class="text-xl font-bold text-slate-800">---</h2></div>
+                <div class="text-right"><span class="label-exec">NIT</span><p id="dispNIT" class="text-lg font-mono font-bold text-slate-700">---</p></div>
             </div>
 
+            <!-- Tabla -->
             <div class="flex-1 overflow-x-auto">
-                <table style="width: 100%; font-size: 11px; text-align: left; border-collapse: collapse;" id="mainTable">
+                <table class="w-full text-[11px] text-left border-collapse" id="mainTable">
                     <thead>
-                        <tr style="background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px;">
-                            <th style="padding: 0.75rem; border: 1px solid #334155; width: 12rem;">TRABAJADOR</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; width: 6rem;">DOC</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155;">NOVEDAD</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; text-align: center; width: 4rem;">% INCAP</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; text-align: center; width: 5rem;">INICIO</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; text-align: center; width: 5rem;">FIN</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; text-align: center; width: 3rem;">DÍAS</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; text-align: right; width: 6rem;">VALOR</th>
-                            <th style="padding: 0.75rem; border: 1px solid #334155; width: 20%;">OBSERVACIONES</th>
-                            <th class="no-print" style="padding: 0.75rem; border: 1px solid #334155; text-align: center; width: 5rem;">ACC</th>
+                        <tr class="bg-[#0f172a] text-white uppercase tracking-wider text-[10px]">
+                            <th class="p-3 border border-slate-700 w-48">TRABAJADOR</th>
+                            <th class="p-3 border border-slate-700 w-24">DOC</th>
+                            <th class="p-3 border border-slate-700">NOVEDAD</th>
+                            <th class="p-3 border border-slate-700 text-center w-16">% INCAP</th>
+                            <th class="p-3 border border-slate-700 text-center w-20">INICIO</th>
+                            <th class="p-3 border border-slate-700 text-center w-20">FIN</th>
+                            <th class="p-3 border border-slate-700 text-center w-12">DÍAS</th>
+                            <th class="p-3 border border-slate-700 text-right w-24">VALOR</th>
+                            <th class="p-3 border border-slate-700 w-1/5">OBSERVACIONES</th>
+                            <th class="p-3 border border-slate-700 no-print text-center w-20">ACC</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" style="border-bottom: 1px solid #cbd5e1;"></tbody>
+                    <tbody id="tableBody" class="divide-y border border-slate-300"></tbody>
                 </table>
             </div>
             
-            <div class="mt-8 pt-4 border-t border-slate-200 flex justify-between items-center text-xs font-bold uppercase text-slate-400">
+            <!-- Footer -->
+            <div class="mt-8 pt-4 border-t border-slate-200 flex justify-between items-center text-[10px] font-bold uppercase text-slate-400">
                 <div>Elaborado por: <span id="dispSign" class="text-slate-900 ml-2 italic text-sm">---</span></div>
                 <div>AMR Consultoría © 2026 - Control Documental</div>
             </div>
         </div>
     </div>
 
+    <!-- === LÓGICA === -->
     <script>
+        // --- BASE DE DATOS BLINDADA ---
         const defaultEmployees = [
-            { id: 1, name: "Cristian David Ramirez Estrada", doc: "C.C. 1000747333", sal: 1750905 },
-            { id: 2, name: "David Coronado Cuadrado", doc: "C.C. 1015069712", sal: 1950905 },
-            { id: 3, name: "Jhon Alejandro Muñoz Legarda", doc: "C.C. 1040739221", sal: 2100000 },
-            { id: 4, name: "John Fredy Sanchez Zapata", doc: "C.C. 98659334", sal: 1750905 },
-            { id: 5, name: "Luis Rivas", doc: "P.P.T. 5052949", sal: 1750905 },
-            { id: 6, name: "Teófilo Ariza Gamboa", doc: "C.C. 79598483", sal: 2250905 },
-            { id: 7, name: "Juan Felipe Ramírez Meneses", doc: "C.C. 3414736", sal: 1750905 }
+            { id: 1, name: "CRISTIAN DAVID RAMIREZ ESTRADA", doc: "CC 1000747333", sal: 1750905 },
+            { id: 2, name: "DAVID CORONADO CUADRADO", doc: "CC 1015069712", sal: 1950905 },
+            { id: 3, name: "JHON ALEJANDRO MUÑOZ LEGARDA", doc: "CC 1040739221", sal: 2100000 },
+            { id: 4, name: "JOHN FREDY SANCHEZ ZAPATA", doc: "CC 98659334", sal: 1750905 },
+            { id: 5, name: "LUIS RIVAS", doc: "PPT 5052949", sal: 1750905 },
+            { id: 6, name: "TEÓFILO ARIZA GAMBOA", doc: "CC 79598483", sal: 2250905 },
+            { id: 7, name: "JUAN FELIPE RAMÍREZ MENESES", doc: "CC 3414736", sal: 1750905 }
         ];
 
-        let employees = JSON.parse(localStorage.getItem('AMR_EMPLOYEES'));
-        
-        // AUTO-REPARACIÓN: Si la lista está vacía o se corrompió, la restaura automáticamente.
-        if (!employees || employees.length === 0) {
-            employees = defaultEmployees;
-            localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
-        }
-
+        let employees = JSON.parse(localStorage.getItem('AMR_EMPLOYEES')) || defaultEmployees;
         let records = [];
         const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-
-        function exportBackup() {
-            try {
-                let backupData = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith('AMR_') || key.startsWith('amr_')) {
-                        backupData[key] = localStorage.getItem(key);
-                    }
-                }
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
-                const downloadNode = document.createElement('a');
-                downloadNode.setAttribute("href", dataStr);
-                const fecha = new Date().toISOString().split('T')[0];
-                downloadNode.setAttribute("download", `Respaldo_Nomina_AMR_${fecha}.json`);
-                document.body.appendChild(downloadNode);
-                downloadNode.click();
-                downloadNode.remove();
-                alert("Copia de seguridad descargada.");
-            } catch (err) { alert("Error al guardar copia: " + err.message); }
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if(confirm("¿Estás seguro de restaurar esta copia? Reemplazará la información actual.")) {
-                        for (const key in data) { localStorage.setItem(key, data[key]); }
-                        alert("Copia restaurada exitosamente. La página se recargará.");
-                        location.reload();
-                    }
-                } catch(err) { alert("Error: El archivo no es un respaldo válido."); }
-            };
-            reader.readAsText(file);
-        }
-
+        
+        // --- UTILS ---
         const clean = (val) => (val && val.toString().trim() !== "" && val !== "0") ? val : "No aplica";
-        const renderVal = (v) => v === 'No aplica' ? '<span style="color:#dc2626; font-weight:800">No aplica</span>' : v;
+        const renderVal = (v) => v === 'No aplica' ? '<span class="txt-red">No aplica</span>' : v;
         const fmtCur = (v) => {
              if (!v || v === "No aplica") return v;
-             const num = parseFloat(v.toString().replace(/[^0-9]/g, ''));
+             const numStr = v.toString().replace(/[^0-9]/g, '');
+             const num = parseFloat(numStr);
              if (isNaN(num)) return v;
              return "$ " + num.toLocaleString('es-CO');
         };
         const toTitleCase = (str) => str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ');
 
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             const mIn = document.getElementById('reportMonth');
             if(mIn) mIn.value = new Date().toISOString().slice(0, 7);
             
-            document.getElementById('dateStart').addEventListener('change', function() { document.getElementById('dStart').value = this.value; calcDays(); });
-            document.getElementById('dateEnd').addEventListener('change', function() { document.getElementById('dEnd').value = this.value; calcDays(); });
-            
+            // Listeners Fechas
+            document.getElementById('dateStart').addEventListener('change', calcDays);
+            document.getElementById('dateEnd').addEventListener('change', calcDays);
+
             loadSettings();
             refreshEmployeeUI();
             updatePeriod(); 
             refreshHistoryList();
         });
 
+        // --- GESTIÓN DE PERSONAL ---
         function addEmployee() {
-            const rawName = document.getElementById('newEmpName').value;
+            const name = document.getElementById('newEmpName').value;
             const type = document.getElementById('newEmpType').value;
             const docNum = document.getElementById('newEmpDoc').value;
             const sal = document.getElementById('newEmpSal').value;
             
-            if(!rawName || !docNum) return alert("Nombre y Número de documento son obligatorios.");
+            if(!name || !docNum) return alert("⚠️ Nombre y Número son obligatorios.");
             
-            employees.push({ id: Date.now(), name: toTitleCase(rawName), doc: `${type} ${docNum}`, sal: sal || 0 });
+            employees.push({ id: Date.now(), name: name.toUpperCase(), doc: `${type} ${docNum}`, sal: sal || 0 });
             localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
+            
             ['newEmpName','newEmpDoc','newEmpSal'].forEach(id => document.getElementById(id).value = '');
             refreshEmployeeUI();
-            alert("Trabajador guardado con éxito.");
         }
 
         function deleteWorker(id) {
-            if(confirm("¿Seguro que deseas eliminar a este trabajador?")) {
+            if(confirm("¿Eliminar trabajador de la base de datos?")) {
                 employees = employees.filter(e => e.id !== id);
                 localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
                 refreshEmployeeUI();
@@ -325,22 +326,23 @@
             const sel = document.getElementById('employeeSelect');
             const listContainer = document.getElementById('workerListContainer');
             
-            if(sel && listContainer) {
+            if(sel) {
                 sel.innerHTML = '<option value="">Seleccionar Trabajador...</option>';
-                listContainer.innerHTML = '';
+                employees.forEach(e => { sel.innerHTML += `<option value="${e.id}">${e.name}</option>`; });
+            }
 
-                employees.forEach(e => { 
-                    sel.innerHTML += `<option value="${e.id}">${e.name}</option>`;
-                    listContainer.innerHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px;">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 80%;">${e.name}</span>
-                            <span style="color: #ef4444; font-weight: bold; cursor: pointer;" onclick="deleteWorker(${e.id})">🗑️</span>
-                        </div>
-                    `;
-                });
-                
+            if(listContainer) {
+                listContainer.innerHTML = '';
                 if(employees.length === 0) {
-                    listContainer.innerHTML = '<div style="padding: 0.5rem; text-align: center; color: #94a3b8; font-style: italic;">Sin registros</div>';
+                    listContainer.innerHTML = '<div class="p-2 text-center text-slate-400 italic">Sin registros</div>';
+                } else {
+                    employees.forEach(e => {
+                        listContainer.innerHTML += `
+                            <div class="flex justify-between items-center py-1">
+                                <span class="truncate w-4/5 font-bold text-slate-700">${e.name}</span>
+                                <span class="text-rose-500 cursor-pointer font-bold px-2 hover:text-rose-700" onclick="deleteWorker(${e.id})" title="Eliminar">X</span>
+                            </div>`;
+                    });
                 }
             }
         }
@@ -361,10 +363,12 @@
             calcVal();
         }
 
+        // --- DATA LOGIC ---
         function updatePeriod() {
             const m = document.getElementById('reportMonth').value;
             const q = document.getElementById('qSelect').value;
             if(!m) return;
+            
             const monthText = new Date(m + "-01").toLocaleString('es-ES', { month: 'long' }).toUpperCase();
             document.getElementById('dispQ1').innerText = `${q}ª QUINCENA`;
             document.getElementById('dispPeriod').innerText = `${q}ª QUINCENA DE ${monthText}`;
@@ -376,11 +380,11 @@
 
         function addRec() {
             const empId = document.getElementById('employeeSelect').value;
-            if(!empId) return alert("Seleccione un Colaborador");
+            if(!empId) return alert("⚠️ Seleccione un Trabajador.");
             
             const emp = employees.find(x => x.id == empId);
             const novType = document.getElementById('novType').value;
-            if(!novType) return alert("Seleccione el Tipo de Novedad");
+            if(!novType) return alert("⚠️ Seleccione Novedad.");
 
             const incap = document.getElementById('incapPercent').value;
 
@@ -407,8 +411,7 @@
             
             renderTable(); refreshHistoryList();
             
-            ['incapPercent','dateStart','dateEnd','dDays','dVal','dObs'].forEach(i => document.getElementById(i).value = '');
-            document.getElementById('novType').value = "";
+            ['novType','incapPercent','dateStart','dateEnd','dDays','dVal','dObs'].forEach(i => document.getElementById(i).value = '');
             configFields();
         }
 
@@ -417,43 +420,37 @@
             tbody.innerHTML = '';
             
             if(records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="padding: 2rem; text-align: center; color: #94a3b8; font-style: italic;">No hay registros para este periodo.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-gray-400 italic">No hay registros para este periodo.</td></tr>`;
                 return;
-            }
-
-            const currentQ = document.getElementById('qSelect').value;
-            if(!document.getElementById('dispPeriod').innerText.includes("MENSUAL")) {
-                tbody.innerHTML += `<tr style="background-color: #f8fafc; color: #475569; font-weight: 800; text-align: center; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;"><td colspan="10" style="padding: 0.5rem;">--- ${currentQ}ª QUINCENA ---</td></tr>`;
             }
 
             records.forEach(r => {
                 if(r.isSeparator) {
-                    tbody.innerHTML += `<tr style="background-color: #f8fafc; color: #475569; font-weight: 800; text-align: center; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;"><td colspan="10" style="padding: 0.5rem;">${r.title}</td></tr>`;
+                    tbody.innerHTML += `<tr class="bg-slate-100 border-y border-slate-300"><td colspan="10" class="py-2 text-center font-bold text-slate-600 text-[10px] tracking-widest">${r.title}</td></tr>`;
                 } else {
                     const money = fmtCur(r.val);
                     const s = (v) => v === "No aplica" ? "txt-red" : "";
 
-                    tbody.innerHTML += `<tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; font-weight: bold; color: #1e293b;">${r.name}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; font-size: 0.75rem;">${r.doc || '---'}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0;" class="${s(r.type)}">${r.type}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: #d97706;" class="${s(r.incap)}">${r.incap}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; text-align: center; font-size: 9px; color: #64748b;" class="${s(r.start)}">${r.start}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; text-align: center; font-size: 9px; color: #64748b;" class="${s(r.end)}">${r.end}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; text-align: center;" class="${s(r.days)}">${r.days}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; text-align: right; font-weight: bold; color: #4338ca;" class="${s(r.val)}">${renderVal(money)}</td>
-                        <td style="padding: 0.75rem; border: 1px solid #e2e8f0; font-size: 9px; font-style: italic; color: #64748b;">${r.obs}</td>
-                        <td class="no-print" style="padding: 0.75rem; border: 1px solid #e2e8f0; text-align: center;">
-                            <div style="display: flex; justify-content: center; gap: 8px;">
-                                <span style="cursor: pointer; font-size: 14px;" onclick="editRow(${r.id})" title="Editar">✏️</span>
-                                <span style="cursor: pointer; font-size: 14px;" onclick="deleteRow(${r.id}, '${r.period}')" title="Borrar">🗑️</span>
-                            </div>
+                    tbody.innerHTML += `<tr class="hover:bg-slate-50 border-b border-gray-200 transition">
+                        <td class="p-2 border border-slate-200 font-bold text-slate-800">${r.name}</td>
+                        <td class="p-2 border border-slate-200 text-xs">${r.doc || '---'}</td>
+                        <td class="p-2 border border-slate-200 ${s(r.type)}">${r.type}</td>
+                        <td class="p-2 border border-slate-200 text-center font-bold text-amber-600 ${s(r.incap)}">${r.incap}</td>
+                        <td class="p-2 border border-slate-200 text-center text-slate-500 text-[9px] ${s(r.start)}">${r.start}</td>
+                        <td class="p-2 border border-slate-200 text-center text-slate-500 text-[9px] ${s(r.end)}">${r.end}</td>
+                        <td class="p-2 border border-slate-200 text-center ${s(r.days)}">${r.days}</td>
+                        <td class="p-2 border border-slate-200 text-right font-bold text-indigo-700 ${s(r.val)}">${renderVal(money)}</td>
+                        <td class="p-2 border border-slate-200 text-[9px] italic text-gray-500">${r.obs}</td>
+                        <td class="no-print p-2 border border-slate-200 text-center">
+                            <span onclick="editRow(${r.id})" class="text-blue-600 btn-icon mx-1" title="Editar">✏️</span>
+                            <span onclick="deleteRow(${r.id}, '${r.period}')" class="text-rose-500 btn-icon mx-1" title="Borrar">🗑️</span>
                         </td>
                     </tr>`;
                 }
             });
         }
 
+        // --- LÓGICA DE CAMPOS ---
         function configFields() {
             const type = document.getElementById('novType').value;
             const fStart = document.getElementById('dateStart');
@@ -471,13 +468,13 @@
             if(type.includes('Aumento')) {
                 if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Incapacidad')) {
-                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = type.includes('ARL') ? '100% (ARL)' : '66.6% (EPS)';
+                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = type.includes('EG') ? '66.6% (EG)' : '100% (AT)';
             } else if(['Ingreso Laboral', 'Retiro Laboral'].includes(type)) {
                 if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fVal) { fVal.disabled = true; fVal.value = "No aplica"; } if(fIncap) fIncap.value = "No aplica";
-            } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.includes('Maternidad') || type.includes('Paternidad')) {
+            } else if(['Permiso Remunerado', 'Vacaciones'].includes(type)) {
                 if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Horas extras') || type.includes('Comisión')) {
-                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
+                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fVal) fVal.readOnly = false; if(fIncap) fIncap.value = "No aplica";
             } else {
                 if(fIncap) fIncap.value = "No aplica";
             }
@@ -500,30 +497,30 @@
             const days = parseFloat(document.getElementById('dDays').value) || 0;
             const salary = parseFloat(document.getElementById('rawSalary').value) || 0;
             if(!type || !days || !salary) return;
+
             let val = 0;
             if(type.includes('Incapacidad')) {
-                 const factor = type.includes('ARL') ? 1 : 0.66666;
+                 const factor = type.includes('EG') ? 0.66666 : 1;
                  val = (salary / 30) * days * factor;
-            } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.includes('Maternidad') || type.includes('Paternidad')) {
-                 if(!type.includes('NO Remunerado')) { val = (salary / 30) * days; }
+            } else if(type.includes('Licencia') || type.includes('Vacaciones') || type.includes('Permiso')) {
+                 val = (salary / 30) * days;
             }
             if(val > 0) document.getElementById('dVal').value = Math.round(val);
         }
 
+        // --- UTILS & HISTORIAL ---
         function saveConfig() {
-            const co = document.getElementById('companyName').value;
-            const nit = document.getElementById('companyNIT').value;
-            const pr = document.getElementById('preparedBy').value;
-            if(document.getElementById('sheetCompanyTitle')) document.getElementById('sheetCompanyTitle').innerText = co || '---';
-            if(document.getElementById('sheetCompanyNIT')) document.getElementById('sheetCompanyNIT').innerText = nit || '---';
+            const co = document.getElementById('companyName').value, nit = document.getElementById('companyNIT').value, pr = document.getElementById('preparedBy').value;
+            if(document.getElementById('dispCo')) document.getElementById('dispCo').innerText = co || '---';
+            if(document.getElementById('dispNIT')) document.getElementById('dispNIT').innerText = nit || '---';
             if(document.getElementById('dispSign')) document.getElementById('dispSign').innerText = pr || '---';
             localStorage.setItem('amr_co', co); localStorage.setItem('amr_nit', nit); localStorage.setItem('amr_pr', pr);
         }
 
         function loadSettings() {
-            const logo = localStorage.getItem('amr_logo'); if(logo) document.getElementById('sheetLogoBox').innerHTML = `<img src="${logo}" style="height: 75px; width: auto; object-fit: contain;">`;
-            const co = localStorage.getItem('amr_co'); if(co) { document.getElementById('companyName').value = co; document.getElementById('sheetCompanyTitle').innerText = co; }
-            const nit = localStorage.getItem('amr_nit'); if(nit) { document.getElementById('companyNIT').value = nit; document.getElementById('sheetCompanyNIT').innerText = nit; }
+            const logo = localStorage.getItem('amr_logo'); if(logo) renderLogo(logo);
+            const co = localStorage.getItem('amr_co'); if(co) { document.getElementById('companyName').value = co; document.getElementById('dispCo').innerText = co; }
+            const nit = localStorage.getItem('amr_nit'); if(nit) { document.getElementById('companyNIT').value = nit; document.getElementById('dispNIT').innerText = nit; }
             const pr = localStorage.getItem('amr_pr'); if(pr) { document.getElementById('preparedBy').value = pr; document.getElementById('dispSign').innerText = pr; }
         }
 
@@ -531,30 +528,34 @@
             if(i.files && i.files[0]) {
                 const r = new FileReader();
                 r.onload = (e) => { 
-                    document.getElementById('sheetLogoBox').innerHTML = `<img src="${e.target.result}" style="height: 75px; width: auto; object-fit: contain;">`;
-                    localStorage.setItem('amr_logo', e.target.result); 
+                    renderLogo(e.target.result); 
+                    localStorage.setItem('amr_logo', e.target.result);
                 };
                 r.readAsDataURL(i.files[0]);
             }
+        }
+
+        function renderLogo(src) {
+            document.getElementById('sheetLogoBox').innerHTML = `<img src="${src}">`;
+            document.getElementById('panelLogoPreview').src = src;
+            document.getElementById('panelLogoPreview').classList.remove('hidden');
+            document.getElementById('uploadPlaceholder').classList.add('hidden');
         }
 
         function refreshHistoryList() {
             const list = document.getElementById('historyList'); list.innerHTML = '';
             const keys = Object.keys(localStorage).filter(k => k.startsWith('AMR_DATA_')).sort().reverse();
             [...new Set(keys.map(k => k.substring(9, 16)))].forEach(m => {
-                list.innerHTML += `
-                <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 0.25rem; padding: 0.5rem; margin-bottom: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; color: #334155;">${m}</span>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button onclick="viewFullMonth('${m}')" style="background-color: #4f46e5; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; cursor: pointer;">VER MES</button>
-                            <span onclick="deleteMonth('${m}')" style="color: #f43f5e; cursor: pointer; font-size: 14px;" title="Borrar">🗑️</span>
-                        </div>
+                list.innerHTML += `<div class="mb-1 p-2 bg-white rounded border flex justify-between items-center shadow-sm">
+                    <span class="font-bold text-slate-700">${m}</span>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="viewFullMonth('${m}')" class="bg-indigo-600 text-white px-2 py-0.5 rounded text-[9px] font-bold hover:bg-indigo-700 transition shadow-sm">VER MES</button>
+                        <button onclick="deleteMonth('${m}')" class="text-rose-500 px-1 font-bold hover:scale-110">🗑️</button>
                     </div>
-                    <div style="display: flex; gap: 1rem; font-size: 9px; color: #64748b; margin-top: 0.25rem; padding-left: 0.5rem;">
-                         <span style="cursor: pointer; text-decoration: underline; color: #4f46e5;" onclick="loadHist('${m}',1)">↳ Ver Q1</span>
-                         <span style="cursor: pointer; text-decoration: underline; color: #4f46e5;" onclick="loadHist('${m}',2)">↳ Ver Q2</span>
-                    </div>
+                </div>
+                <div class="flex gap-4 text-[9px] text-slate-500 pl-2 mb-2">
+                     <span class="cursor-pointer hover:text-indigo-600 hover:underline" onclick="loadHist('${m}',1)">↳ Ver Q1</span>
+                     <span class="cursor-pointer hover:text-indigo-600 hover:underline" onclick="loadHist('${m}',2)">↳ Ver Q2</span>
                 </div>`;
             });
         }
@@ -600,48 +601,92 @@
             deleteRow(id, r.period);
         }
 
-        function clearForNew() { if(confirm("¿Limpiar vista?")) { records = []; renderTable(); } }
+        function clearForNew() {
+            if(confirm("¿Limpiar vista?")) { records = []; renderTable(); }
+        }
         function loadHist(m, q) { document.getElementById('reportMonth').value = m; document.getElementById('qSelect').value = q; updatePeriod(); }
 
-        function generatePDF() {
+        // --- EXPORTACIÓN PDF CORREGIDA ---
+        function downloadPDF() {
             const pr = document.getElementById('preparedBy').value;
             if(!pr) return alert("Firma requerida en 'Elaborado por'.");
+            
             try {
-                const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+                const { jsPDF } = window.jspdf; 
+                const doc = new jsPDF('l', 'mm', 'a4');
                 const logoImg = localStorage.getItem('amr_logo');
-                if(logoImg) { try { doc.addImage(logoImg, 'PNG', 15, 10, 40, 20); } catch(e) {} }
+                
+                // LOGO REPARADO: Se dibuja primero, arriba a la izquierda.
+                if(logoImg) {
+                    // x, y, width, height. Ajustado para no solapar el título.
+                    doc.addImage(logoImg, 'PNG', 15, 10, 40, 20); 
+                }
+
                 const body = records.map(r => {
-                    if(r.isSeparator) return [{ content: r.title, colSpan: 9, styles: { halign: 'center', fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }];
-                    return [r.name, r.doc, r.type, clean(r.incap), clean(r.start), clean(r.end), clean(r.days), fmtCur(r.val), r.obs || ""];
+                    if(r.isSeparator) return [{ content: r.title, colSpan: 10, styles: { halign: 'center', fillColor: [241, 245, 249], fontStyle: 'bold' } }];
+                    return [
+                        r.name,
+                        r.doc || "---",
+                        r.type,
+                        clean(r.incap),
+                        clean(r.start),
+                        clean(r.end),
+                        clean(r.days),
+                        fmtCur(r.val),
+                        r.obs || ""
+                    ];
                 });
+
                 doc.autoTable({ 
                     head: [['TRABAJADOR', 'DOC', 'NOVEDAD', '% INCAP', 'INICIO', 'FIN', 'DÍAS', 'VALOR', 'OBSERVACIONES']],
-                    body: body, startY: 45, theme: 'grid', styles: { fontSize: 8 },
+                    body: body, 
+                    startY: 45, // INICIA DEBAJO DEL LOGO Y HEADER
+                    theme: 'grid',
+                    styles: { fontSize: 8 },
                     headStyles: { fillColor: [15, 23, 42], textColor: 255 },
                     didParseCell: function(data) {
-                        if (data.cell.text[0] === 'No aplica') { data.cell.styles.textColor = [220, 38, 38]; data.cell.styles.fontStyle = 'bold'; }
+                        if (data.cell.text[0] === 'No aplica') { 
+                            data.cell.styles.textColor = [220, 38, 38]; 
+                            data.cell.styles.fontStyle = 'bold'; 
+                        }
                     },
                     didDrawPage: function (data) {
+                        // TÍTULO A LA DERECHA
                         doc.setFontSize(14); doc.setTextColor(99, 102, 241); doc.setFont("helvetica", "bold");
                         doc.text("NOVEDADES DE NÓMINA - SEGURIDAD SOCIAL", 280, 20, { align: 'right' });
+                        
+                        // PERIODO A LA DERECHA
                         doc.setFontSize(10); doc.setTextColor(0,0,0);
                         doc.text(document.getElementById('dispPeriod').innerText, 280, 26, { align: 'right' });
+                        
+                        // NOMBRE EMPRESA A LA IZQUIERDA (Debajo del logo)
                         doc.setFontSize(12); doc.setTextColor(15, 23, 42); 
-                        doc.text(document.getElementById('companyName').value || "EMPRESA", 15, 38);
+                        doc.text(document.getElementById('dispCo').innerText, 15, 38);
+                        
+                        // NIT
                         doc.setFontSize(9); doc.setFont("helvetica", "normal");
-                        doc.text("NIT: " + (document.getElementById('companyNIT').value || "---"), 15, 43);
+                        doc.text("NIT: " + document.getElementById('dispNIT').innerText, 15, 43);
+
+                        // LÍNEA SEPARADORA
                         doc.setDrawColor(200, 200, 200); doc.line(15, 44, 280, 44);
+                        
+                        // FOOTER
+                        const pageHeight = doc.internal.pageSize.height;
                         doc.setFontSize(8); doc.setTextColor(50, 50, 50);
-                        doc.text("Elaborado por: " + pr, 15, doc.internal.pageSize.height - 10);
+                        doc.text("Elaborado por: " + pr, 15, pageHeight - 10);
+                        doc.text("AMR Consultoría ©", 280, pageHeight - 10, { align: 'right' });
                     }
                 });
-                doc.save(`AMR_Reporte.pdf`);
-            } catch (error) { alert("Error al generar PDF."); }
+                doc.save(`Reporte_AMR.pdf`);
+            } catch(e) {
+                console.error(e);
+                alert("Error al generar PDF.");
+            }
         }
 
         function downloadExcel() {
             const wb = XLSX.utils.table_to_book(document.getElementById('mainTable'));
-            XLSX.writeFile(wb, `Reporte_AMR.xlsx`);
+            XLSX.writeFile(wb, `Reporte_AMR_${document.getElementById('dispPeriod').innerText}.xlsx`);
         }
     </script>
 </body>
