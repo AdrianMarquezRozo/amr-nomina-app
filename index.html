@@ -143,14 +143,14 @@
         <section class="space-y-1 border-t pt-3">
             <span class="label-exec text-indigo-700 font-black italic underline">4. Registro de Novedad</span>
             
-            <div class="flex gap-2 mb-2">
-                <input type="month" id="reportMonth" class="input-exec w-3/5" onchange="updatePeriod()">
-                <select id="qSelect" class="input-exec w-2/5" onchange="updatePeriod()">
+            <div class="flex flex-row gap-2 w-full">
+                <input type="month" id="reportMonth" class="input-exec" style="flex: 1 1 auto; min-width: 0;" onchange="updatePeriod()">
+                <select id="qSelect" class="input-exec" style="flex: 0 0 125px; padding-left: 4px; padding-right: 4px; text-align: center;" onchange="updatePeriod()">
                     <option value="1">1ª Quincena</option>
                     <option value="2">2ª Quincena</option>
                 </select>
             </div>
-            
+
             <select id="employeeSelect" class="input-exec cursor-pointer font-bold bg-yellow-50" onchange="showEmpData()">
                 <option value="">Seleccionar Trabajador...</option>
             </select>
