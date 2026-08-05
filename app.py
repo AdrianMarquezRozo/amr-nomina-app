@@ -8,6 +8,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Interfaz principal de la suite de nómina y seguridad social
+st.markdown("""
+    <div style="padding: 1.5rem; text-align: center; font-family: 'Manrope', sans-serif; background: #ffffff; border-bottom: 1px solid #e2e8f0; margin-bottom: 1rem;">
+        <h2 style="color: #6366f1; font-weight: 800; font-size: 1.25rem;">AMR SUITE | NÓMINA Y SEGURIDAD SOCIAL</h2>
+        <p style="color: #475569; font-weight: 600; font-size: 0.85rem;">Sistema de control de novedades quincenales activo y actualizado.</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Código completo de la aplicación de nómina encapsulado de manera segura para evitar errores de sintaxis en Python
 html_code = """
 <!DOCTYPE html>
 <html lang="es">
