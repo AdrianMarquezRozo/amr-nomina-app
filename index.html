@@ -378,7 +378,7 @@
             
             if(!name || !docNum) return alert("⚠️ Nombre y Número son obligatorios.");
             
-            employees.push({ id: Date.now(), name: name.toUpperCase(), doc: `${type} ${docNum}`, sal: sal || 0 });
+            employees.push({ id: Date.now(), name: name.trim(), doc: `${type} ${docNum}`, sal: sal || 0 });
             localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
             
             ['newEmpName','newEmpDoc','newEmpSal'].forEach(id => document.getElementById(id).value = '');
