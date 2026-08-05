@@ -8,7 +8,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# STREAMSTREAM_CHUNK:Cargando interfaz de nómina integrada...
 html_code = """
 <!DOCTYPE html>
 <html lang="es">
@@ -476,15 +475,26 @@ html_code = """
             if(!type) return;
 
             if(type.includes('Aumento')) {
-                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
+                if(fStart) fStart.disabled = true; 
+                if(fEnd) fEnd.disabled = true; 
+                if(fDays) fDays.disabled = true; 
+                if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Incapacidad')) {
-                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = type.includes('ARL') ? '100% (ARL)' : '66.6% (EPS)';
+                if(fVal) fVal.readOnly = true; 
+                if(fIncap) fIncap.value = type.includes('ARL') ? '100% (ARL)' : '66.6% (EPS)';
             } else if(['Ingreso Laboral', 'Retiro Laboral'].includes(type)) {
-                if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fVal) { fVal.disabled = true; fVal.value = "No aplica"; } if(fIncap) fIncap.value = "No aplica";
+                if(fEnd) fEnd.disabled = true; 
+                if(fDays) fDays.disabled = true; 
+                if(fVal) { fVal.disabled = true; fVal.value = "No aplica"; } 
+                if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.includes('Maternidad') || type.includes('Paternidad')) {
-                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = "No aplica";
+                if(fVal) fVal.readOnly = true; 
+                if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Horas extras') || type.includes('Comisión')) {
-                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
+                if(fStart) fStart.disabled = true; 
+                if(fEnd) fEnd.disabled = true; 
+                if(fDays) fDays.disabled = true; 
+                if(fIncap) fIncap.value = "No aplica";
             } else {
                 if(fIncap) fIncap.value = "No aplica";
             }
