@@ -98,8 +98,8 @@
                 <span>Agosto 2026</span>
             </div>
             
-            <!-- Logo inyectado desde la URL Raw de Github -->
-            <img src="https://raw.githubusercontent.com/adrianmarquezrozo/amr-nomina-app/main/Logo%202026.png" alt="AMR Consultoría Logo" class="mt-3 w-32 h-auto rounded bg-white p-1 shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/150x80/ffffff/0f172a?text=AMR+Logo';">
+            <!-- Logo dinámico enlazado al botón de Cargar Logo -->
+            <img id="panelHeaderLogo" src="https://placehold.co/150x80/ffffff/0f172a?text=AMR+Logo" alt="AMR Consultoría Logo" class="mt-3 w-32 h-auto rounded bg-white p-1 shadow-sm object-contain">
         </div>
 
         <!-- 1. IDENTIFICACIÓN -->
@@ -109,11 +109,11 @@
             <input type="text" id="companyNIT" class="input-exec" placeholder="NIT" oninput="saveConfig()">
             <input type="text" id="preparedBy" class="input-exec border-l-4 border-l-amber-400" placeholder="ELABORADO POR (Obligatorio)..." oninput="saveConfig()">
             
-             <!-- Carga Logo (Secundario/Personalizado) -->
+             <!-- Carga Logo -->
              <label class="logo-upload-box mt-2">
                 <div id="uploadPlaceholder" class="text-[10px] font-bold text-gray-500 uppercase flex flex-col items-center gap-1">
                     <span class="text-xl">📂</span>
-                    <span>Cargar Logo (Opcional)</span>
+                    <span>Cargar Logo</span>
                 </div>
                 <img id="panelLogoPreview" class="hidden">
                 <input type="file" accept="image/*" class="hidden" onchange="handleLogoUpload(this)">
@@ -151,13 +151,12 @@
         <section class="space-y-1 border-t pt-3">
             <span class="label-exec text-indigo-700 font-black italic underline">4. Registro de Novedad</span>
             
-            <!-- CORRECCIÓN: Cajas de Fecha y Quincena equilibradas -->
-            <div class="flex gap-2 mb-2 w-full">
-                <div class="w-2/3">
-                    <input type="month" id="reportMonth" class="input-exec text-[11px]" style="padding-left: 5px; padding-right: 2px;" onchange="updatePeriod()">
+            <div class="flex w-full gap-2 mb-2">
+                <div class="w-3/5">
+                    <input type="month" id="reportMonth" class="input-exec w-full" onchange="updatePeriod()">
                 </div>
-                <div class="w-1/3">
-                    <select id="qSelect" class="input-exec text-[11px]" style="padding-left: 5px; padding-right: 5px; text-align: center;" onchange="updatePeriod()">
+                <div class="w-2/5">
+                    <select id="qSelect" class="input-exec w-full" onchange="updatePeriod()">
                         <option value="1">1ª Quin</option>
                         <option value="2">2ª Quin</option>
                     </select>
@@ -330,10 +329,8 @@
         function exportBackup() {
             try {
                 let backupData = {};
-                // Recorremos todo el localStorage
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
-                    // Solo guardamos lo de esta app
                     if (key.startsWith('AMR_') || key.startsWith('amr_')) {
                         backupData[key] = localStorage.getItem(key);
                     }
@@ -363,7 +360,7 @@
                             localStorage.setItem(key, data[key]); 
                         }
                         alert("✅ Copia restaurada exitosamente.");
-                        location.reload(); // Recargamos para aplicar cambios
+                        location.reload(); 
                     }
                 } catch(err) { 
                     alert("❌ Error: El archivo no es un respaldo válido de AMR Suite."); 
@@ -596,14 +593,8 @@
         }
 
         function loadSettings() {
-            // Check custom logo URL first, then fallback to base64 if previously saved.
             const logo = localStorage.getItem('amr_logo');
-            if(logo) {
-                renderLogo(logo);
-            } else {
-                // Si no hay logo guardado, renderizar la URL por defecto de GitHub (Como el V6.9.0 original)
-                renderLogo("https://raw.githubusercontent.com/adrianmarquezrozo/amr-nomina-app/main/Logo%202026.png");
-            }
+            if(logo) renderLogo(logo);
             
             const co = localStorage.getItem('amr_co'); if(co) { document.getElementById('companyName').value = co; document.getElementById('dispCo').innerText = co; }
             const nit = localStorage.getItem('amr_nit'); if(nit) { document.getElementById('companyNIT').value = nit; document.getElementById('dispNIT').innerText = nit; }
@@ -623,6 +614,10 @@
 
         function renderLogo(src) {
             document.getElementById('sheetLogoBox').innerHTML = `<img src="${src}" onerror="this.onerror=null; this.src='https://placehold.co/150x80/ffffff/0f172a?text=AMR+Logo';">`;
+            
+            // Actualizar el del Panel Izquierdo también
+            const panelLogo = document.getElementById('panelHeaderLogo');
+            if(panelLogo) panelLogo.src = src;
         }
 
         function refreshHistoryList() {
@@ -698,15 +693,7 @@
                 const { jsPDF } = window.jspdf; 
                 const doc = new jsPDF('l', 'mm', 'a4');
                 
-                // Tratar de obtener el logo desde el DOM o LocalStorage
-                const domLogo = document.querySelector('#sheetLogoBox img');
-                let logoImgData = null;
-                
-                if(domLogo && domLogo.src) {
-                    logoImgData = domLogo.src;
-                } else {
-                    logoImgData = localStorage.getItem('amr_logo');
-                }
+                const logoImgData = localStorage.getItem('amr_logo');
                 
                 // LOGO REPARADO: Se dibuja primero, arriba a la izquierda.
                 if(logoImgData) {
