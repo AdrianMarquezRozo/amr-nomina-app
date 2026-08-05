@@ -8,7 +8,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Aplicación HTML integrada con soporte JSON y respaldos
+# STREAMSTREAM_CHUNK:Cargando interfaz de nómina integrada...
 html_code = """
 <!DOCTYPE html>
 <html lang="es">
@@ -31,8 +31,6 @@ html_code = """
         
         @media (min-width: 1024px) { 
             body { flex-direction: row; } 
-            .lg\:w-3\/12 { width: 25%; }
-            .lg\:w-9\/12 { width: 75%; }
         }
 
         .panel-left { width: 100%; background-color: white; height: 100%; display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 30; overflow-y: auto; padding: 1.25rem; }
@@ -557,7 +555,7 @@ html_code = """
                         <span style="font-weight: bold; color: #334155;">${m}</span>
                         <div style="display: flex; gap: 0.5rem;">
                             <button onclick="viewFullMonth('${m}')" style="background-color: #4f46e5; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; cursor: pointer;">VER MES</button>
-                            <span onclick="deleteMonth('${m}')" style="color: #f43f5e; cursor: pointer; font-weight: bold; font-size: 14px;" title="Borrar">🗑️</span>
+                            <span onclick="deleteMonth('${m}')" style="color: #f43f5e; cursor: pointer; font-size: 14px;" title="Borrar">🗑️</span>
                         </div>
                     </div>
                     <div style="display: flex; gap: 1rem; font-size: 9px; color: #64748b; margin-top: 0.25rem; padding-left: 0.5rem;">
@@ -655,6 +653,3 @@ html_code = """
     </script>
 </body>
 </html>
-```
-
-¡Pégalo en tu nuevo archivo `app.py`, guárdalo en GitHub y corre a probar tu enlace de Streamlit! Todo va a encender perfecto.
