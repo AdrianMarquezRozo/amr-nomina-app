@@ -151,16 +151,13 @@
         <section class="space-y-1 border-t pt-3">
             <span class="label-exec text-indigo-700 font-black italic underline">4. Registro de Novedad</span>
             
-            <div class="flex w-full gap-2 mb-2">
-                <div class="w-3/5">
-                    <input type="month" id="reportMonth" class="input-exec w-full" onchange="updatePeriod()">
-                </div>
-                <div class="w-2/5">
-                    <select id="qSelect" class="input-exec w-full" onchange="updatePeriod()">
-                        <option value="1">1ª Quin</option>
-                        <option value="2">2ª Quin</option>
-                    </select>
-                </div>
+            <!-- CORRECCIÓN DE DISEÑO: MES Y QUINCENA UNO DEBAJO DE OTRO -->
+            <div class="flex flex-col gap-1 w-full mb-2">
+                <input type="month" id="reportMonth" class="input-exec" onchange="updatePeriod()">
+                <select id="qSelect" class="input-exec" onchange="updatePeriod()">
+                    <option value="1">1ª Quincena</option>
+                    <option value="2">2ª Quincena</option>
+                </select>
             </div>
 
             <select id="employeeSelect" class="input-exec cursor-pointer font-bold bg-yellow-50" onchange="showEmpData()">
@@ -308,7 +305,6 @@
              if (isNaN(num)) return v;
              return "$ " + num.toLocaleString('es-CO');
         };
-        const toTitleCase = (str) => str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ');
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -371,14 +367,15 @@
 
         // --- GESTIÓN DE PERSONAL ---
         function addEmployee() {
-            const name = document.getElementById('newEmpName').value;
+            const rawName = document.getElementById('newEmpName').value;
             const type = document.getElementById('newEmpType').value;
             const docNum = document.getElementById('newEmpDoc').value;
             const sal = document.getElementById('newEmpSal').value;
             
-            if(!name || !docNum) return alert("⚠️ Nombre y Número son obligatorios.");
+            if(!rawName || !docNum) return alert("⚠️ Nombre y Número son obligatorios.");
             
-            employees.push({ id: Date.now(), name: name.trim(), doc: `${type} ${docNum}`, sal: sal || 0 });
+            const name = rawName.trim(); 
+            employees.push({ id: Date.now(), name: name, doc: `${type} ${docNum}`, sal: sal || 0 });
             localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
             
             ['newEmpName','newEmpDoc','newEmpSal'].forEach(id => document.getElementById(id).value = '');
@@ -684,7 +681,7 @@
         }
         function loadHist(m, q) { document.getElementById('reportMonth').value = m; document.getElementById('qSelect').value = q; updatePeriod(); }
 
-        // --- EXPORTACIÓN PDF CORREGIDA ---
+        // --- PDF ENGINE ---
         function downloadPDF() {
             const pr = document.getElementById('preparedBy').value;
             if(!pr) return alert("Firma requerida en 'Elaborado por'.");
@@ -695,11 +692,23 @@
                 
                 const logoImgData = localStorage.getItem('amr_logo');
                 
-                // LOGO REPARADO: Se dibuja primero, arriba a la izquierda.
+                // CÁLCULO PROPORCIONAL DEL LOGO
                 if(logoImgData) {
                     try {
-                        doc.addImage(logoImgData, 'PNG', 15, 10, 40, 20); 
-                    } catch(e) { console.log('Error adding logo to PDF', e); }
+                        const imgProps = doc.getImageProperties(logoImgData);
+                        const maxW = 40; 
+                        const maxH = 20; 
+                        
+                        let finalW = maxW;
+                        let finalH = (imgProps.height * finalW) / imgProps.width;
+                        
+                        if (finalH > maxH) {
+                            finalH = maxH;
+                            finalW = (imgProps.width * finalH) / imgProps.height;
+                        }
+                        
+                        doc.addImage(logoImgData, 'PNG', 15, 10, finalW, finalH); 
+                    } catch(e) { console.log('Error logo', e); }
                 }
 
                 const body = records.map(r => {
@@ -720,7 +729,7 @@
                 doc.autoTable({ 
                     head: [['TRABAJADOR', 'DOC', 'NOVEDAD', '% INCAP', 'INICIO', 'FIN', 'DÍAS', 'VALOR', 'OBSERVACIONES']],
                     body: body, 
-                    startY: 45, // INICIA DEBAJO DEL LOGO Y HEADER
+                    startY: 45,
                     theme: 'grid',
                     styles: { fontSize: 8 },
                     headStyles: { fillColor: [15, 23, 42], textColor: 255 },
@@ -731,26 +740,20 @@
                         }
                     },
                     didDrawPage: function (data) {
-                        // TÍTULO A LA DERECHA
                         doc.setFontSize(14); doc.setTextColor(99, 102, 241); doc.setFont("helvetica", "bold");
                         doc.text("NOVEDADES DE NÓMINA - SEGURIDAD SOCIAL", 280, 20, { align: 'right' });
                         
-                        // PERIODO A LA DERECHA
                         doc.setFontSize(10); doc.setTextColor(0,0,0);
                         doc.text(document.getElementById('dispPeriod').innerText, 280, 26, { align: 'right' });
                         
-                        // NOMBRE EMPRESA A LA IZQUIERDA (Debajo del logo)
                         doc.setFontSize(12); doc.setTextColor(15, 23, 42); 
                         doc.text(document.getElementById('dispCo').innerText, 15, 38);
                         
-                        // NIT
                         doc.setFontSize(9); doc.setFont("helvetica", "normal");
                         doc.text("NIT: " + document.getElementById('dispNIT').innerText, 15, 43);
 
-                        // LÍNEA SEPARADORA
                         doc.setDrawColor(200, 200, 200); doc.line(15, 44, 280, 44);
                         
-                        // FOOTER
                         const pageHeight = doc.internal.pageSize.height;
                         doc.setFontSize(8); doc.setTextColor(50, 50, 50);
                         doc.text("Elaborado por: " + pr, 15, pageHeight - 10);
