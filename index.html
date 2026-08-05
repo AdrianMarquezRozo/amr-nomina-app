@@ -53,8 +53,8 @@
 
     <div class="panel-left">
         <div class="p-4 bg-slate-900 text-white rounded shadow-lg text-center" style="flex-shrink: 0; margin-bottom: 1.25rem;">
-            <h1 class="font-bold text-sm text-amber-400 uppercase" style="letter-spacing: 0.1em;">AMR SUITE V7.1.0</h1>
-            <span class="text-xs text-slate-400">Respaldo Local + Netlify</span>
+            <h1 class="font-bold text-sm text-amber-400 uppercase" style="letter-spacing: 0.1em;">AMR SUITE</h1>
+            <span class="text-xs text-slate-400">Respaldo Local + Streamlit</span>
         </div>
 
         <section class="mb-4">
@@ -72,9 +72,12 @@
         <section class="border-t border-slate-200 pt-3 mb-4">
             <span class="label-exec text-indigo-700 font-black italic underline">2. Registro de Novedad</span>
             
-            <div style="display: flex; gap: 0.25rem; margin-bottom: 0.5rem;">
-                <input type="month" id="reportMonth" class="input-exec" onchange="updatePeriod()">
-                <select id="qSelect" class="input-exec" onchange="updatePeriod()"><option value="1">1ª Quincena</option><option value="2">2ª Quincena</option></select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; margin-bottom: 0.5rem;">
+                <input type="month" id="reportMonth" class="input-exec" style="margin-bottom: 0;" onchange="updatePeriod()">
+                <select id="qSelect" class="input-exec" style="margin-bottom: 0; padding-left: 4px; padding-right: 4px; font-size: 12px;" onchange="updatePeriod()">
+                    <option value="1">1ª Quincena</option>
+                    <option value="2">2ª Quincena</option>
+                </select>
             </div>
             
             <select id="employeeSelect" class="input-exec" onchange="showEmpData()">
@@ -225,8 +228,8 @@
 
         let employees = JSON.parse(localStorage.getItem('AMR_EMPLOYEES'));
         
-        // AUTO-REPARACIÓN: Si la lista se corrompió a menos de 7 por el error anterior, la restaura automáticamente.
-        if (!employees || employees.length < 7) {
+        // AUTO-REPARACIÓN: Si la lista está vacía o se corrompió, la restaura automáticamente.
+        if (!employees || employees.length === 0) {
             employees = defaultEmployees;
             localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
         }
@@ -251,7 +254,7 @@
                 document.body.appendChild(downloadNode);
                 downloadNode.click();
                 downloadNode.remove();
-                alert("✅ Copia de seguridad descargada.");
+                alert("Copia de seguridad descargada.");
             } catch (err) { alert("Error al guardar copia: " + err.message); }
         }
 
@@ -262,12 +265,12 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if(confirm("⚠️ ¿Estás seguro de restaurar esta copia? Reemplazará la información actual.")) {
+                    if(confirm("¿Estás seguro de restaurar esta copia? Reemplazará la información actual.")) {
                         for (const key in data) { localStorage.setItem(key, data[key]); }
-                        alert("✅ Copia restaurada exitosamente. La página se recargará.");
+                        alert("Copia restaurada exitosamente. La página se recargará.");
                         location.reload();
                     }
-                } catch(err) { alert("❌ Error: El archivo no es un respaldo válido."); }
+                } catch(err) { alert("Error: El archivo no es un respaldo válido."); }
             };
             reader.readAsText(file);
         }
@@ -301,13 +304,13 @@
             const docNum = document.getElementById('newEmpDoc').value;
             const sal = document.getElementById('newEmpSal').value;
             
-            if(!rawName || !docNum) return alert("⚠️ Nombre y Número de documento son obligatorios.");
+            if(!rawName || !docNum) return alert("Nombre y Número de documento son obligatorios.");
             
             employees.push({ id: Date.now(), name: toTitleCase(rawName), doc: `${type} ${docNum}`, sal: sal || 0 });
             localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
             ['newEmpName','newEmpDoc','newEmpSal'].forEach(id => document.getElementById(id).value = '');
             refreshEmployeeUI();
-            alert("✅ Trabajador guardado con éxito.");
+            alert("Trabajador guardado con éxito.");
         }
 
         function deleteWorker(id) {
@@ -373,11 +376,11 @@
 
         function addRec() {
             const empId = document.getElementById('employeeSelect').value;
-            if(!empId) return alert("⚠️ Seleccione un Colaborador");
+            if(!empId) return alert("Seleccione un Colaborador");
             
             const emp = employees.find(x => x.id == empId);
             const novType = document.getElementById('novType').value;
-            if(!novType) return alert("⚠️ Seleccione el Tipo de Novedad");
+            if(!novType) return alert("Seleccione el Tipo de Novedad");
 
             const incap = document.getElementById('incapPercent').value;
 
@@ -405,7 +408,7 @@
             renderTable(); refreshHistoryList();
             
             ['incapPercent','dateStart','dateEnd','dDays','dVal','dObs'].forEach(i => document.getElementById(i).value = '');
-             document.getElementById('novType').value = "";
+            document.getElementById('novType').value = "";
             configFields();
         }
 
@@ -466,27 +469,15 @@
             if(!type) return;
 
             if(type.includes('Aumento')) {
-                if(fStart) fStart.disabled = true; 
-                if(fEnd) fEnd.disabled = true; 
-                if(fDays) fDays.disabled = true; 
-                if(fIncap) fIncap.value = "No aplica";
+                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Incapacidad')) {
-                if(fVal) fVal.readOnly = true; 
-                if(fIncap) fIncap.value = type.includes('ARL') ? '100% (ARL)' : '66.6% (EPS)';
+                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = type.includes('ARL') ? '100% (ARL)' : '66.6% (EPS)';
             } else if(['Ingreso Laboral', 'Retiro Laboral'].includes(type)) {
-                if(fEnd) fEnd.disabled = true; 
-                if(fDays) fDays.disabled = true; 
-                if(fVal) { fVal.disabled = true; fVal.value = "No aplica"; } 
-                if(fIncap) fIncap.value = "No aplica";
-            } else if(['Permiso Remunerado', 'Vacaciones'].includes(type)) {
-                if(fVal) fVal.readOnly = true; 
-                if(fIncap) fIncap.value = "No aplica";
+                if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fVal) { fVal.disabled = true; fVal.value = "No aplica"; } if(fIncap) fIncap.value = "No aplica";
+            } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.includes('Maternidad') || type.includes('Paternidad')) {
+                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = "No aplica";
             } else if(type.includes('Horas extras') || type.includes('Comisión')) {
-                if(fStart) fStart.disabled = true; 
-                if(fEnd) fEnd.disabled = true; 
-                if(fDays) fDays.disabled = true; 
-                if(fVal) fVal.readOnly = false; 
-                if(fIncap) fIncap.value = "No aplica";
+                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
             } else {
                 if(fIncap) fIncap.value = "No aplica";
             }
@@ -509,15 +500,13 @@
             const days = parseFloat(document.getElementById('dDays').value) || 0;
             const salary = parseFloat(document.getElementById('rawSalary').value) || 0;
             if(!type || !days || !salary) return;
-
             let val = 0;
             if(type.includes('Incapacidad')) {
                  const factor = type.includes('ARL') ? 1 : 0.66666;
                  val = (salary / 30) * days * factor;
-            } else if(type.includes('Licencia') || type.includes('Vacaciones') || type.includes('Permiso')) {
-                 val = (salary / 30) * days;
+            } else if(type.includes('Remunerado') || type.includes('Vacaciones') || type.includes('Maternidad') || type.includes('Paternidad')) {
+                 if(!type.includes('NO Remunerado')) { val = (salary / 30) * days; }
             }
-            
             if(val > 0) document.getElementById('dVal').value = Math.round(val);
         }
 
