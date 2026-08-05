@@ -1,1 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMR SUITE | GOLDEN MASTER</title>
+    
+    <!-- Fuentes y Librerías -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <style>
+        :root { --brand-dark: #0f172a; --brand-accent: #6366f1; --bg-canvas: #f1f5f9; }
+        body { font-family: 'Manrope', sans-serif; background-color: var(--bg-canvas); color: #1e293b; }
+        .panel-control { font-size: 13.5px; }
+        .input-exec { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; font-weight: 600; background: white; transition: all 0.2s; margin-bottom: 5px; }
+        .input-exec:focus { outline: none; border-color: var(--brand-accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        .label-exec { display: block; font-size: 11px; text-transform: uppercase; font-weight: 800; color: #475569; margin-bottom: 3px; }
+        .txt-red { color: #dc2626 !important; font-weight: 800 !important; }
+        #sheetLogoBox { height: 110px; width: auto; max-width: 300px; display: flex; align-items: center; justify-content: flex-start; }
+        #sheetLogoBox img { height: 75px; width: auto; object-fit: contain; }
+        .btn-main { background-color: #0f172a; color: white; padding: 10px; border-radius: 5px; font-weight: 700; text-transform: uppercase; font-size: 11px; width: 100%; transition: all 0.2s; cursor: pointer; text-align: center; }
+        .btn-main:hover { background-color: #4f46e5; }
+        .separator-row { background-color: #f8fafc !important; color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; }
+        .acc-cell { display: flex; justify-content: center; align-items: center; gap: 10px; height: 100%; border: none !important; }
+        .btn-icon { cursor: pointer; transition: transform 0.1s; }
+        .btn-icon:hover { transform: scale(1.2); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="h-screen flex flex-col lg:flex-row overflow-hidden panel-control">
+
+    <!-- PANEL IZQUIERDO -->
+    <div class="w-full lg:w-3/12 bg-white h-full flex flex-col border-r shadow-xl z-30 overflow-y-auto p-5 space-y-5">
+        <div class="p-4 bg-slate-900 text-white rounded shadow-lg text-center shrink-0">
+            <h1 class="font-bold text-sm text-amber-400 uppercase tracking-widest">AMR SUITE</h1>
+            <span class="text-[10px] text-slate-400">GOLDEN MASTER</span>
+        </div>
+
+        <section class="space-y-1">
+            <span class="label-exec text-indigo-700 font-black italic underline">1. Identificación</span>
+            <input type="text" id="companyName" class="input-exec" placeholder="NOMBRE EMPRESA" oninput="saveConfig()">
+            <input type="text" id="companyNIT" class="input-exec" placeholder="NIT" oninput="saveConfig()">
+            <input type="text" id="preparedBy" class="input-exec border-l-4 border-l-amber-400" placeholder="ELABORADO POR (Obligatorio)..." oninput="saveConfig()">
+             <label class="block mt-2 cursor-pointer">
+                <span class="text-[10px] text-indigo-600 font-bold hover:underline">📂 Cambiar Logo</span>
+                <input type="file" accept="image/*" class="hidden" onchange="handleLogoUpload(this)">
+            </label>
+        </section>
+
+        <section class="bg-slate-100 p-3 rounded border border-slate-300">
+            <span class="label-exec text-slate-800 font-black italic underline">2. Agregar Trabajador</span>
+            <div class="mt-2 space-y-2">
+                <input type="text" id="newEmpName" class="input-exec" placeholder="Nombre Completo">
+                <div class="flex gap-1">
+                    <select id="newEmpType" class="input-exec w-1/3">
+                        <option value="CC">CC</option><option value="CE">CE</option><option value="PPT">PPT</option><option value="PEP">PEP</option><option value="TI">TI</option>
+                    </select>
+                    <input type="text" id="newEmpDoc" class="input-exec w-2/3" placeholder="Número">
+                </div>
+                <input type="number" id="newEmpSal" class="input-exec" placeholder="Salario Base">
+                <button onclick="addEmployee()" class="btn-main bg-indigo-600 hover:bg-indigo-700">Guardar Trabajador</button>
+            </div>
+            <div class="mt-3 border-t border-slate-300 pt-2">
+                <label class="label-exec text-slate-500">Lista Actual (Click 🗑️ para borrar)</label>
+                <div id="workerListContainer" class="bg-white border border-slate-200 rounded max-h-24 overflow-y-auto"></div>
+            </div>
+        </section>
+
+        <section class="bg-indigo-50 p-3 rounded border border-indigo-100">
+            <span class="label-exec text-indigo-800 font-black italic underline">3. Historial</span>
+            <div id="historyList" class="mt-2 space-y-2 max-h-40 overflow-y-auto"></div>
+        </section>
+
+        <section class="space-y-1 border-t pt-3">
+            <span class="label-exec text-indigo-700 font-black italic underline">4. Registro de Novedad</span>
+            <div class="flex gap-1">
+                <input type="month" id="reportMonth" class="input-exec" onchange="updatePeriod()">
+                <select id="qSelect" class="input-exec" onchange="updatePeriod()"><option value="1">1ª Quincena</option><option value="2">2ª Quincena</option></select>
+            </div>
+            <select id="employeeSelect" class="input-exec" onchange="showEmpData()">
+                <option value="">Seleccionar Trabajador...</option>
+            </select>
+            <div id="empDetails" class="p-2 bg-yellow-50 rounded border border-yellow-200 hidden text-[11px] font-bold">
+                <span id="detDoc"></span> | <span id="detSal" class="text-indigo-600"></span>
+            </div>
+            <label class="label-exec mt-2">Tipo de Novedad</label>
+            <select id="novType" class="input-exec" onchange="configFields()">
+                <option value="">Seleccione Novedad...</option>
+                <option value="Ingreso Laboral">Ingreso Laboral</option>
+                <option value="Retiro Laboral">Retiro Laboral</option>
+                <option value="Incapacidad EG">Incapacidad EG (66.6%)</option>
+                <option value="Incapacidad AT">Incapacidad AT (100%)</option>
+                <option value="Licencia de Maternidad">Licencia de Maternidad</option>
+                <option value="Licencia de Paternidad">Licencia de Paternidad</option>
+                <option value="Licencia Remunerada">Licencia Remunerada</option>
+                <option value="Vacaciones">Vacaciones</option>
+                <option value="Suspensión">Suspensión</option>
+                <option value="Aumento Salarial">Aumento Salarial</option>
+                <option value="Comisión">Comisión</option>
+                <option value="Horas extras - Recargos">Horas extras - Recargos</option>
+            </select>
+            <input type="text" id="incapPercent" class="input-exec" placeholder="% INCAP">
+            <div class="grid grid-cols-2 gap-1">
+                <div><label class="label-exec">Inicio</label><input type="date" id="dateStart" class="input-exec" onchange="calcDays()"></div>
+                <div><label class="label-exec">Fin</label><input type="date" id="dateEnd" class="input-exec" onchange="calcDays()"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-1">
+                <input type="number" id="dDays" class="input-exec" placeholder="Días" oninput="calcVal()">
+                <input type="text" id="dVal" class="input-exec" placeholder="Valor $">
+            </div>
+            <textarea id="dObs" class="input-exec h-16" placeholder="Observaciones..."></textarea>
+            <input type="hidden" id="rawSalary" value="0">
+            <input type="hidden" id="dStart"><input type="hidden" id="dEnd">
+            <button onclick="addRec()" class="btn-main mt-1">AGREGAR NOVEDAD</button>
+        </section>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="w-full lg:w-9/12 h-full flex flex-col bg-gray-200 overflow-auto p-6 items-center">
+        <div class="w-full max-w-6xl flex justify-end gap-3 mb-4 no-print">
+            <button onclick="clearForNew()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-slate-50 transition shadow-sm">✨ Nueva Hoja</button>
+            <button onclick="downloadExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-emerald-700 transition shadow-sm">📊 Excel</button>
+            <button onclick="downloadPDF()" class="bg-rose-600 text-white px-5 py-2 rounded text-[11px] font-bold uppercase hover:bg-rose-700 transition shadow-md cursor-pointer">📄 PDF</button>
+        </div>
+
+        <div id="captureArea" class="bg-white w-full max-w-6xl shadow-2xl border min-h-[850px] p-12 flex flex-col">
+            <div class="flex justify-between items-start mb-8 border-b-2 border-slate-900 pb-4">
+                <div id="sheetLogoBox"></div>
+                <div class="text-right">
+                    <h2 class="text-xl font-bold text-[#6366f1] uppercase">NOVEDADES DE NÓMINA - SEGURIDAD SOCIAL</h2>
+                    <div class="flex justify-end gap-5 text-[12px] font-bold text-slate-700 mt-2 uppercase">
+                        <span id="dispQ1">---</span><span id="dispPeriod">---</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center mb-6">
+                <div><span class="label-exec">Empresa / Razón Social</span><h2 id="dispCo" class="text-xl font-bold text-slate-800">---</h2></div>
+                <div class="text-right"><span class="label-exec">NIT</span><p id="dispNIT" class="text-lg font-mono font-bold text-slate-700">---</p></div>
+            </div>
+            <div class="flex-1 overflow-x-auto">
+                <table class="w-full text-[11px] text-left border-collapse" id="mainTable">
+                    <thead>
+                        <tr class="bg-[#0f172a] text-white uppercase tracking-wider text-[10px]">
+                            <th class="p-3 border border-slate-700 w-48">TRABAJADOR</th>
+                            <th class="p-3 border border-slate-700 w-24">DOC</th>
+                            <th class="p-3 border border-slate-700">NOVEDAD</th>
+                            <th class="p-3 border border-slate-700 text-center w-16">% INCAP</th>
+                            <th class="p-3 border border-slate-700 text-center w-20">INICIO</th>
+                            <th class="p-3 border border-slate-700 text-center w-20">FIN</th>
+                            <th class="p-3 border border-slate-700 text-center w-12">DÍAS</th>
+                            <th class="p-3 border border-slate-700 text-right w-24">VALOR</th>
+                            <th class="p-3 border border-slate-700 w-1/5">OBSERVACIONES</th>
+                            <th class="p-3 border border-slate-700 no-print text-center w-20">ACC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y border border-slate-300"></tbody>
+                </table>
+            </div>
+            <div class="mt-8 pt-4 border-t border-slate-200 flex justify-between items-center text-[10px] font-bold uppercase text-slate-400">
+                <div>Elaborado por: <span id="dispSign" class="text-slate-900 ml-2 italic text-sm">---</span></div>
+                <div>AMR Consultoría © 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultEmployees = [
+            { id: 1, name: "Cristian David Ramirez Estrada", doc: "CC 1000747333", sal: 1750905 },
+            { id: 2, name: "David Coronado Cuadrado", doc: "CC 1015069712", sal: 1950905 },
+            { id: 3, name: "Jhon Alejandro Muñoz Legarda", doc: "CC 1040739221", sal: 2100000 },
+            { id: 4, name: "John Fredy Sanchez Zapata", doc: "CC 98659334", sal: 1750905 },
+            { id: 5, name: "Luis Rivas", doc: "PPT 5052949", sal: 1750905 },
+            { id: 6, name: "Teófilo Ariza Gamboa", doc: "CC 79598483", sal: 2250905 },
+            { id: 7, name: "Juan Felipe Ramírez Meneses", doc: "CC 3414736", sal: 1750905 }
+        ];
+
+        let employees = JSON.parse(localStorage.getItem('AMR_EMPLOYEES')) || defaultEmployees;
+        let records = [];
+        const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+        
+        const clean = (val) => (val && val.toString().trim() !== "" && val !== "0") ? val : "No aplica";
+        const renderVal = (v) => v === 'No aplica' ? '<span class="txt-red">No aplica</span>' : v;
+        const fmtCur = (v) => {
+             if (!v || v === "No aplica") return v;
+             const num = parseFloat(v.toString().replace(/[^0-9]/g, ''));
+             if (isNaN(num)) return v;
+             return "$ " + num.toLocaleString('es-CO');
+        };
+        const toTitleCase = (str) => str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const mIn = document.getElementById('reportMonth');
+            if(mIn) mIn.value = new Date().toISOString().slice(0, 7);
+            document.getElementById('dateStart').addEventListener('change', function() { document.getElementById('dStart').value = this.value; calcDays(); });
+            document.getElementById('dateEnd').addEventListener('change', function() { document.getElementById('dEnd').value = this.value; calcDays(); });
+            loadSettings();
+            refreshEmployeeUI();
+            updatePeriod(); 
+            refreshHistoryList();
+        });
+
+        function addEmployee() {
+            const rawName = document.getElementById('newEmpName').value;
+            const type = document.getElementById('newEmpType').value;
+            const docNum = document.getElementById('newEmpDoc').value;
+            const sal = document.getElementById('newEmpSal').value;
+            if(!rawName || !docNum) return alert("⚠️ Nombre y Número de documento son obligatorios.");
+            employees.push({ id: Date.now(), name: toTitleCase(rawName), doc: `${type} ${docNum}`, sal: sal || 0 });
+            localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
+            ['newEmpName','newEmpDoc','newEmpSal'].forEach(id => document.getElementById(id).value = '');
+            refreshEmployeeUI();
+        }
+
+        function deleteWorker(id) {
+            if(confirm("¿Seguro que deseas eliminar a este trabajador?")) {
+                employees = employees.filter(e => e.id !== id);
+                localStorage.setItem('AMR_EMPLOYEES', JSON.stringify(employees));
+                refreshEmployeeUI();
+            }
+        }
+
+        function refreshEmployeeUI() {
+            const sel = document.getElementById('employeeSelect');
+            const listContainer = document.getElementById('workerListContainer');
+            if(sel && listContainer) {
+                sel.innerHTML = '<option value="">Seleccionar Trabajador...</option>';
+                listContainer.innerHTML = '';
+                employees.forEach(e => { 
+                    sel.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+                    listContainer.innerHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 80%;">${e.name}</span>
+                            <span style="color: #ef4444; font-weight: bold; cursor: pointer;" onclick="deleteWorker(${e.id})">🗑️</span>
+                        </div>
+                    `;
+                });
+                if(employees.length === 0) listContainer.innerHTML = '<div style="padding: 0.5rem; text-align: center; color: #94a3b8; font-style: italic;">Sin registros</div>';
+            }
+        }
+
+        function showEmpData() {
+            const id = document.getElementById('employeeSelect').value;
+            const box = document.getElementById('empDetails');
+            if(id) {
+                const emp = employees.find(e => e.id == id);
+                document.getElementById('detDoc').innerText = emp.doc;
+                document.getElementById('detSal').innerText = fmtCur(emp.sal);
+                document.getElementById('rawSalary').value = emp.sal;
+                box.classList.remove('hidden');
+            } else { box.classList.add('hidden'); document.getElementById('rawSalary').value = 0; }
+            calcVal();
+        }
+
+        function updatePeriod() {
+            const m = document.getElementById('reportMonth').value;
+            const q = document.getElementById('qSelect').value;
+            if(!m) return;
+            const monthText = new Date(m + "-01").toLocaleString('es-ES', { month: 'long' }).toUpperCase();
+            document.getElementById('dispQ1').innerText = `${q}ª QUINCENA`;
+            document.getElementById('dispPeriod').innerText = `${q}ª QUINCENA DE ${monthText}`;
+            records = JSON.parse(localStorage.getItem(`AMR_DATA_${m}_Q${q}`) || '[]');
+            renderTable();
+        }
+
+        function addRec() {
+            const empId = document.getElementById('employeeSelect').value;
+            if(!empId) return alert("⚠️ Seleccione un Colaborador");
+            const emp = employees.find(x => x.id == empId);
+            const novType = document.getElementById('novType').value;
+            if(!novType) return alert("⚠️ Seleccione el Tipo de Novedad");
+            records.push({
+                id: Date.now(), name: emp.name, doc: emp.doc, type: clean(novType),
+                incap: clean(document.getElementById('incapPercent').value),
+                start: clean(document.getElementById('dateStart').value),
+                end: clean(document.getElementById('dateEnd').value),
+                days: clean(document.getElementById('dDays').value),
+                val: clean(document.getElementById('dVal').value),
+                obs: clean(document.getElementById('dObs').value),
+                period: `Q${document.getElementById('qSelect').value}`
+            });
+            const m = document.getElementById('reportMonth').value;
+            const q = document.getElementById('qSelect').value;
+            if(!document.getElementById('dispPeriod').innerText.includes("MENSUAL")) {
+                localStorage.setItem(`AMR_DATA_${m}_Q${q}`, JSON.stringify(records));
+            }
+            renderTable(); refreshHistoryList();
+            ['incapPercent','dateStart','dateEnd','dDays','dVal','dObs'].forEach(i => document.getElementById(i).value = '');
+            document.getElementById('novType').value = "";
+            configFields();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            if(records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="padding: 2rem; text-align: center; color: #94a3b8; font-style: italic;">No hay registros.</td></tr>`;
+                return;
+            }
+            records.forEach(r => {
+                if(r.isSeparator) {
+                    tbody.innerHTML += `<tr class="separator-row"><td colspan="10" style="padding: 0.5rem;">${r.title}</td></tr>`;
+                } else {
+                    const money = fmtCur(r.val);
+                    const s = (v) => v === "No aplica" ? "txt-red" : "";
+                    tbody.innerHTML += `<tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 0.75rem; font-weight: bold;">${r.name}</td>
+                        <td style="padding: 0.75rem; font-size: 0.75rem;">${r.doc || '---'}</td>
+                        <td style="padding: 0.75rem;" class="${s(r.type)}">${r.type}</td>
+                        <td style="padding: 0.75rem; text-align: center; font-weight: bold; color: #d97706;" class="${s(r.incap)}">${r.incap}</td>
+                        <td style="padding: 0.75rem; text-align: center; font-size: 9px; color: #64748b;" class="${s(r.start)}">${r.start}</td>
+                        <td style="padding: 0.75rem; text-align: center; font-size: 9px; color: #64748b;" class="${s(r.end)}">${r.end}</td>
+                        <td style="padding: 0.75rem; text-align: center;" class="${s(r.days)}">${r.days}</td>
+                        <td style="padding: 0.75rem; text-align: right; font-weight: bold; color: #4338ca;" class="${s(r.val)}">${renderVal(money)}</td>
+                        <td style="padding: 0.75rem; font-size: 9px; font-style: italic; color: #64748b;">${r.obs}</td>
+                        <td class="no-print" style="padding: 0.75rem; text-align: center;">
+                            <span style="cursor: pointer; font-size: 14px;" onclick="editRow(${r.id})">✏️</span>
+                            <span style="cursor: pointer; font-size: 14px;" onclick="deleteRow(${r.id}, '${r.period}')">🗑️</span>
+                        </td>
+                    </tr>`;
+                }
+            });
+        }
+
+        function configFields() {
+            const type = document.getElementById('novType').value;
+            const fStart = document.getElementById('dateStart');
+            const fEnd = document.getElementById('dateEnd');
+            const fDays = document.getElementById('dDays');
+            const fVal = document.getElementById('dVal');
+            const fIncap = document.getElementById('incapPercent');
+            [fStart, fEnd, fDays, fVal].forEach(f => { if(f) { f.disabled = false; f.value = ''; }});
+            if(fVal) fVal.readOnly = false;
+            if(fIncap) fIncap.value = '';
+            if(!type) return;
+            if(type.includes('Aumento')) {
+                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
+            } else if(type.includes('Incapacidad')) {
+                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = type.includes('EG') ? '66.6% (EG)' : '100% (AT)';
+            } else if(['Ingreso Laboral', 'Retiro Laboral'].includes(type)) {
+                if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fVal) { fVal.disabled = true; fVal.value = "No aplica"; } if(fIncap) fIncap.value = "No aplica";
+            } else if(['Permiso Remunerado', 'Vacaciones'].includes(type)) {
+                if(fVal) fVal.readOnly = true; if(fIncap) fIncap.value = "No aplica";
+            } else if(type.includes('Horas extras') || type.includes('Comisión')) {
+                if(fStart) fStart.disabled = true; if(fEnd) fEnd.disabled = true; if(fDays) fDays.disabled = true; if(fIncap) fIncap.value = "No aplica";
+            } else {
+                if(fIncap) fIncap.value = "No aplica";
+            }
+            calcVal();
+        }
+
+        function calcDays() {
+            const s = document.getElementById('dateStart').value;
+            const e = document.getElementById('dateEnd').value;
+            if(s && e) {
+                const diff = (new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24);
+                const d = diff >= 0 ? diff + 1 : 0;
+                document.getElementById('dDays').value = d;
+                calcVal();
+            }
+        }
+        
+        function calcVal() {
+            const type = document.getElementById('novType').value;
+            const days = parseFloat(document.getElementById('dDays').value) || 0;
+            const salary = parseFloat(document.getElementById('rawSalary').value) || 0;
+            if(!type || !days || !salary) return;
+            let val = 0;
+            if(type.includes('Incapacidad')) {
+                 const factor = type.includes('EG') ? 0.66666 : 1;
+                 val = (salary / 30) * days * factor;
+            } else if(type.includes('Licencia') || type.includes('Vacaciones') || type.includes('Permiso')) {
+                 val = (salary / 30) * days;
+            }
+            if(val > 0) document.getElementById('dVal').value = Math.round(val);
+        }
+
+        function saveConfig() {
+            const co = document.getElementById('companyName').value, nit = document.getElementById('companyNIT').value, pr = document.getElementById('preparedBy').value;
+            if(document.getElementById('dispCo')) document.getElementById('dispCo').innerText = co || '---';
+            if(document.getElementById('dispNIT')) document.getElementById('dispNIT').innerText = nit || '---';
+            if(document.getElementById('dispSign')) document.getElementById('dispSign').innerText = pr || '---';
+            localStorage.setItem('amr_co', co); localStorage.setItem('amr_nit', nit); localStorage.setItem('amr_pr', pr);
+        }
+
+        function loadSettings() {
+            const logo = localStorage.getItem('amr_logo'); if(logo) document.getElementById('sheetLogoBox').innerHTML = `<img src="${logo}">`;
+            const co = localStorage.getItem('amr_co'); if(co) { document.getElementById('companyName').value = co; document.getElementById('dispCo').innerText = co; }
+            const nit = localStorage.getItem('amr_nit'); if(nit) { document.getElementById('companyNIT').value = nit; document.getElementById('dispNIT').innerText = nit; }
+            const pr = localStorage.getItem('amr_pr'); if(pr) { document.getElementById('preparedBy').value = pr; document.getElementById('dispSign').innerText = pr; }
+        }
+
+        function handleLogoUpload(i) {
+            if(i.files && i.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => { 
+                    renderLogo(e.target.result); 
+                    localStorage.setItem('amr_master_logo', e.target.result); 
+                    localStorage.setItem('amr_logo', e.target.result);
+                };
+                r.readAsDataURL(i.files[0]);
+            }
+        }
+
+        function renderLogo(src) {
+            document.getElementById('sheetLogoBox').innerHTML = `<img src="${src}">`;
+            document.getElementById('panelLogoPreview').src = src;
+            document.getElementById('panelLogoPreview').classList.remove('hidden');
+            document.getElementById('uploadPlaceholder').classList.add('hidden');
+        }
+
+        function refreshHistoryList() {
+            const list = document.getElementById('historyList'); list.innerHTML = '';
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('AMR_DATA_')).sort().reverse();
+            [...new Set(keys.map(k => k.substring(9, 16)))].forEach(m => {
+                list.innerHTML += `<div class="mb-1 p-2 bg-white rounded border flex justify-between items-center shadow-sm">
+                    <span class="font-bold text-slate-700">${m}</span>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="viewFullMonth('${m}')" class="bg-indigo-600 text-white px-2 py-0.5 rounded text-[9px] font-bold hover:bg-indigo-700 transition shadow-sm">VER MES</button>
+                        <button onclick="deleteMonth('${m}')" class="text-rose-500 px-1 font-bold hover:scale-110">🗑️</button>
+                    </div>
+                </div>
+                <div class="flex gap-4 text-[9px] text-slate-500 pl-2 mb-2">
+                     <span class="cursor-pointer hover:text-indigo-600 hover:underline" onclick="loadHist('${m}',1)">↳ Ver Q1</span>
+                     <span class="cursor-pointer hover:text-indigo-600 hover:underline" onclick="loadHist('${m}',2)">↳ Ver Q2</span>
+                </div>`;
+            });
+        }
+
+        function viewFullMonth(m) {
+            const q1 = JSON.parse(localStorage.getItem(`AMR_DATA_${m}_Q1`) || '[]');
+            const q2 = JSON.parse(localStorage.getItem(`AMR_DATA_${m}_Q2`) || '[]');
+            const sep1 = { isSeparator: true, title: "--- PRIMERA QUINCENA ---" };
+            const sep2 = { isSeparator: true, title: "--- SEGUNDA QUINCENA ---" };
+            records = [sep1, ...q1, sep2, ...q2];
+            document.getElementById('dispPeriod').innerText = `REPORTE MENSUAL: ${m}`;
+            document.getElementById('reportMonth').value = m;
+            renderTable();
+        }
+
+        function deleteMonth(m) {
+            if(!confirm(`¿Eliminar historial ${m}?`)) return;
+            localStorage.removeItem(`AMR_DATA_${m}_Q1`); localStorage.removeItem(`AMR_DATA_${m}_Q2`);
+            refreshHistoryList(); updatePeriod();
+        }
+
+        function deleteRow(id, p) {
+            if(!confirm("¿Eliminar?")) return;
+            const m = document.getElementById('reportMonth').value;
+            let cr = JSON.parse(localStorage.getItem(`AMR_DATA_${m}_${p}`) || '[]').filter(r => r.id !== id);
+            localStorage.setItem(`AMR_DATA_${m}_${p}`, JSON.stringify(cr));
+            if(document.getElementById('dispPeriod').innerText.includes("MENSUAL")) viewFullMonth(m); else updatePeriod();
+        }
+
+        function editRow(id) {
+            const r = records.find(x => x.id === id);
+            if(!r) return;
+            const emp = employees.find(e => e.name === r.name);
+            if(emp) { document.getElementById('employeeSelect').value = emp.id; showEmpData(); }
+            document.getElementById('novType').value = r.type === "No aplica" ? "" : r.type;
+            configFields();
+            document.getElementById('incapPercent').value = r.incap === "No aplica" ? "" : r.incap;
+            document.getElementById('dateStart').value = r.start === "No aplica" ? "" : r.start;
+            document.getElementById('dateEnd').value = r.end === "No aplica" ? "" : r.end;
+            document.getElementById('dDays').value = r.days === "No aplica" ? "" : r.days;
+            document.getElementById('dVal').value = r.val === "No aplica" ? "" : r.val;
+            document.getElementById('dObs').value = r.obs || "";
+            deleteRow(id, r.period);
+        }
+
+        function clearForNew() {
+            if(confirm("¿Limpiar vista?")) { records = []; renderTable(); }
+        }
+        function loadHist(m, q) { document.getElementById('reportMonth').value = m; document.getElementById('qSelect').value = q; updatePeriod(); }
+
+        function downloadPDF() {
+            const pr = document.getElementById('preparedBy').value;
+            if(!pr) return alert("Firma requerida en 'Elaborado por'.");
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+            const logoImg = localStorage.getItem('amr_logo');
+            if(logoImg) doc.addImage(logoImg, 'PNG', 15, 10, 40, 20); 
+
+            const body = records.map(r => {
+                if(r.isSeparator) return [{ content: r.title, colSpan: 9, styles: { halign: 'center', fillColor: [241, 245, 249], fontStyle: 'bold' } }];
+                return [
+                    r.name + (r.doc ? `\n${r.doc}` : ''),
+                    r.type,
+                    clean(r.incap),
+                    clean(r.start),
+                    clean(r.end),
+                    clean(r.days),
+                    fmtCur(r.val),
+                    r.obs || ""
+                ];
+            });
+
+            doc.autoTable({ 
+                head: [['TRABAJADOR', 'NOVEDAD', '% INCAP', 'INICIO', 'FIN', 'DÍAS', 'VALOR', 'OBSERVACIONES']],
+                body: body, startY: 45, theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42], textColor: 255 },
+                didParseCell: function(data) {
+                    if (data.cell.text[0] === 'No aplica') { data.cell.styles.textColor = [220, 38, 38]; data.cell.styles.fontStyle = 'bold'; }
+                },
+                didDrawPage: function (data) {
+                    doc.setFontSize(14); doc.setTextColor(99, 102, 241); doc.setFont("helvetica", "bold");
+                    doc.text("NOVEDADES DE NÓMINA - SEGURIDAD SOCIAL", 280, 20, { align: 'right' });
+                    doc.setFontSize(10); doc.setTextColor(0,0,0);
+                    doc.text(document.getElementById('dispPeriod').innerText, 280, 26, { align: 'right' });
+                    doc.setFontSize(12); doc.setTextColor(15, 23, 42); 
+                    doc.text(document.getElementById('dispCo').innerText, 15, 38);
+                    doc.setFontSize(9); doc.setFont("helvetica", "normal");
+                    doc.text("NIT: " + document.getElementById('dispNIT').innerText, 15, 43);
+                    doc.setDrawColor(200, 200, 200); doc.line(15, 44, 280, 44);
+                    doc.setFontSize(8); doc.setTextColor(50, 50, 50);
+                    doc.text("Elaborado por: " + pr, 15, doc.internal.pageSize.height - 10);
+                }
+            });
+            doc.save(`Reporte_AMR.pdf`);
+        }
+
+        function downloadExcel() {
+            const wb = XLSX.utils.table_to_book(document.getElementById('mainTable'));
+            XLSX.writeFile(wb, `Reporte_AMR.xlsx`);
+        }
+    </script>
+</body>
+</html>
+```
+
+### Paso 2: Crear el archivo Python (`app.py`)
+
+1. Vuelve a tu repositorio en GitHub.
+2. Si tienes algún archivo viejo llamado `app.py` o `aplicación.py`, **bórralos todos**.
+3. Haz clic en **"Add file"** -> **"Create new file"**.
+4. Nómbralo: **`app.py`**
+5. Copia este pequeño código (que es lo que le dice a Streamlit que busque tu archivo HTML) y pégalo.
+6. Haz clic en **"Commit changes..."**.
+
+```python:Script para Streamlit:app.py
+import streamlit as st
+import streamlit.components.v1 as components
+
+# Configuración básica de la página en Streamlit
+st.set_page_config(
+    page_title="AMR SUITE | BAJO RELIEVE",
+    page_icon="❖",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# Leemos el archivo index.html que creamos antes
+try:
+    with open("index.html", "r", encoding="utf-8") as f:
+        html_code = f.read()
+    
+    # Mostramos el contenido HTML en toda la pantalla
+    components.html(html_code, height=900, scrolling=True)
+
+except FileNotFoundError:
+    st.error("Por favor, crea el archivo 'index.html' en tu repositorio de GitHub para que la aplicación funcione.")
