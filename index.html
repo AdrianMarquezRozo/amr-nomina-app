@@ -143,9 +143,10 @@
         <section class="space-y-1 border-t pt-3">
             <span class="label-exec text-indigo-700 font-black italic underline">4. Registro de Novedad</span>
             
-            <div class="flex flex-row gap-2 w-full">
-                <input type="month" id="reportMonth" class="input-exec" style="flex: 1 1 auto; min-width: 0;" onchange="updatePeriod()">
-                <select id="qSelect" class="input-exec" style="flex: 0 0 125px; padding-left: 4px; padding-right: 4px; text-align: center;" onchange="updatePeriod()">
+            <!-- CORRECCIÓN: Cajas de Fecha y Quincena apiladas verticalmente -->
+            <div class="flex flex-col gap-1 w-full mb-1">
+                <input type="month" id="reportMonth" class="input-exec" onchange="updatePeriod()">
+                <select id="qSelect" class="input-exec" onchange="updatePeriod()">
                     <option value="1">1ª Quincena</option>
                     <option value="2">2ª Quincena</option>
                 </select>
