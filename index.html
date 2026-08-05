@@ -201,11 +201,23 @@
     <!-- === VISTA PREVIA (Derecha) === -->
     <div class="w-full lg:w-9/12 h-full flex flex-col bg-gray-200 overflow-auto p-6 items-center">
         
-        <!-- TOOLBAR -->
-        <div class="w-full max-w-6xl flex justify-end gap-3 mb-4 no-print">
-            <button onclick="clearForNew()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-slate-50 transition shadow-sm">✨ Nueva Hoja</button>
-            <button onclick="downloadExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-emerald-700 transition shadow-sm">📊 Excel</button>
-            <button onclick="downloadPDF()" class="bg-rose-600 text-white px-5 py-2 rounded text-[11px] font-bold uppercase hover:bg-rose-700 transition shadow-md cursor-pointer">📄 Descargar PDF</button>
+        <!-- TOOLBAR CON BOTONES DE BACKUP RESTAURADOS -->
+        <div class="w-full max-w-6xl flex justify-between items-center mb-4 no-print">
+             <!-- BOTONES DE BACKUP -->
+            <div class="flex gap-2">
+                <button onclick="exportBackup()" class="bg-blue-600 text-white px-3 py-2 rounded text-[11px] font-bold uppercase hover:bg-blue-700 transition shadow-sm" title="Descarga una copia de toda tu información">💾 Guardar Copia de Seguridad</button>
+                <label class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded text-[11px] font-bold uppercase hover:bg-slate-50 transition shadow-sm cursor-pointer" title="Sube tu copia para restaurar">
+                    📂 Restaurar Copia
+                    <input type="file" accept=".json" class="hidden" onchange="importBackup(event)">
+                </label>
+            </div>
+            
+            <!-- BOTONES DE EXPORTACION Y LIMPIEZA -->
+            <div class="flex gap-3">
+                <button onclick="clearForNew()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-slate-50 transition shadow-sm">✨ Nueva Hoja</button>
+                <button onclick="downloadExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded text-[11px] font-bold uppercase hover:bg-emerald-700 transition shadow-sm">📊 Excel</button>
+                <button onclick="downloadPDF()" class="bg-rose-600 text-white px-5 py-2 rounded text-[11px] font-bold uppercase hover:bg-rose-700 transition shadow-md cursor-pointer">📄 Descargar PDF</button>
+            </div>
         </div>
 
         <div id="captureArea" class="bg-white w-full max-w-6xl shadow-2xl border min-h-[850px] p-12 flex flex-col">
@@ -300,6 +312,52 @@
             updatePeriod(); 
             refreshHistoryList();
         });
+
+        // --- SISTEMA DE BACKUP ---
+        function exportBackup() {
+            try {
+                let backupData = {};
+                // Recorremos todo el localStorage
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    // Solo guardamos lo de esta app
+                    if (key.startsWith('AMR_') || key.startsWith('amr_')) {
+                        backupData[key] = localStorage.getItem(key);
+                    }
+                }
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+                const downloadNode = document.createElement('a');
+                downloadNode.setAttribute("href", dataStr);
+                const fecha = new Date().toISOString().split('T')[0];
+                downloadNode.setAttribute("download", `Backup_AMR_Suite_${fecha}.json`);
+                document.body.appendChild(downloadNode);
+                downloadNode.click();
+                downloadNode.remove();
+            } catch (err) { 
+                alert("Error al guardar la copia de seguridad: " + err.message); 
+            }
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(confirm("¿Estás seguro de restaurar esta copia? Reemplazará la información actual en tu pantalla.")) {
+                        for (const key in data) { 
+                            localStorage.setItem(key, data[key]); 
+                        }
+                        alert("✅ Copia restaurada exitosamente.");
+                        location.reload(); // Recargamos para aplicar cambios
+                    }
+                } catch(err) { 
+                    alert("❌ Error: El archivo no es un respaldo válido de AMR Suite."); 
+                }
+            };
+            reader.readAsText(file);
+        }
 
         // --- GESTIÓN DE PERSONAL ---
         function addEmployee() {
